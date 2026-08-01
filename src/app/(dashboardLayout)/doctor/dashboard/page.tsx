@@ -1,11 +1,7 @@
+import DoctorDashboardContent from "@/components/modules/Doctor/DoctorDashboardContent";
 
-const DoctorsDashboard
- = () => {
-  return (
-    <div>DoctorsDashboard
-        
-    </div>
-  )
-}
+const DoctorsDashboard = () => {
+  return <DoctorDashboardContent />;
+};
 
-export default DoctorsDashboard
+export default DoctorsDashboard;

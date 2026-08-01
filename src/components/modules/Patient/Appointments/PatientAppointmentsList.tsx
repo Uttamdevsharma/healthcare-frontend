@@ -15,10 +15,20 @@ import {
 import { type IAppointment } from "@/types/appointment.types"
 import { useMutation } from "@tanstack/react-query"
 import { format } from "date-fns"
-import { AlertCircle, CalendarClock, CircleDollarSign, CreditCard } from "lucide-react"
+import {
+  AlertCircle,
+  CalendarClock,
+  CircleDollarSign,
+  CreditCard,
+  Star,
+  Video,
+  XCircle,
+} from "lucide-react"
 import Link from "next/link"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
+import CancelAppointmentConfirmationDialog from "./CancelAppointmentConfirmationDialog"
+import GiveReviewModal from "../Reviews/GiveReviewModal"
 
 interface PatientAppointmentsListProps {
   appointments: IAppointment[]
@@ -47,6 +57,11 @@ const PatientAppointmentsList = ({
   const initiatePaymentMutation = useMutation({
     mutationFn: initiateAppointmentPaymentAction,
   })
+
+  const [appointmentToCancel, setAppointmentToCancel] = useState<IAppointment | null>(null)
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
+  const [appointmentToReview, setAppointmentToReview] = useState<IAppointment | null>(null)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
 
   const sortedAppointments = useMemo(() => {
     return [...appointments].sort((left, right) => {
@@ -121,6 +136,16 @@ const PatientAppointmentsList = ({
           {sortedAppointments.map((appointment) => {
             const canPayNow =
               appointment.paymentStatus !== "PAID" && appointment.status !== "CANCELED"
+            const canCancel =
+              appointment.status === "SCHEDULED" && appointment.paymentStatus !== "PAID"
+            const canJoinCall = Boolean(
+              appointment.videoCallingId &&
+                (appointment.status === "SCHEDULED" || appointment.status === "INPROGRESS"),
+            )
+            const canReview =
+              appointment.status === "COMPLETED" &&
+              appointment.paymentStatus === "PAID" &&
+              !appointment.review
 
             return (
               <Card key={appointment.id} className="gap-4">
@@ -168,33 +193,91 @@ const PatientAppointmentsList = ({
                   </div>
                 </CardContent>
 
-                <CardFooter className="justify-between gap-3">
+                <CardFooter className="flex-wrap justify-between gap-3">
                   <Button asChild variant="outline">
                     <Link href={`/consultation/doctor/${appointment.doctorId || appointment.doctor?.id || ""}`}>
                       View Doctor
                     </Link>
                   </Button>
 
-                  {canPayNow ? (
-                    <Button
-                      type="button"
-                      onClick={() => void handlePayNow(appointment.id)}
-                      disabled={initiatePaymentMutation.isPending}
-                    >
-                      <CreditCard className="size-4" />
-                      {initiatePaymentMutation.isPending ? "Redirecting..." : "Pay Now"}
-                    </Button>
-                  ) : (
-                    <Button type="button" variant="secondary" disabled>
-                      {appointment.paymentStatus === "PAID" ? "Paid" : "Unavailable"}
-                    </Button>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {canJoinCall && appointment.videoCallingId && (
+                      <Button asChild size="sm" variant="secondary">
+                        <a href={`/video-call/${appointment.videoCallingId}`} target="_blank" rel="noreferrer">
+                          <Video className="size-4" />
+                          Join Call
+                        </a>
+                      </Button>
+                    )}
+
+                    {canReview && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setAppointmentToReview(appointment)
+                          setIsReviewModalOpen(true)
+                        }}
+                      >
+                        <Star className="size-4 text-amber-500" />
+                        Write Review
+                      </Button>
+                    )}
+
+                    {canCancel && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => {
+                          setAppointmentToCancel(appointment)
+                          setIsCancelDialogOpen(true)
+                        }}
+                      >
+                        <XCircle className="size-4" />
+                        Cancel
+                      </Button>
+                    )}
+
+                    {canPayNow ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => void handlePayNow(appointment.id)}
+                        disabled={initiatePaymentMutation.isPending}
+                      >
+                        <CreditCard className="size-4" />
+                        {initiatePaymentMutation.isPending ? "Redirecting..." : "Pay Now"}
+                      </Button>
+                    ) : (
+                      appointment.paymentStatus === "PAID" &&
+                      appointment.status !== "COMPLETED" && (
+                        <Button type="button" size="sm" variant="secondary" disabled>
+                          Paid
+                        </Button>
+                      )
+                    )}
+                  </div>
                 </CardFooter>
               </Card>
             )
           })}
         </div>
       )}
+
+      <CancelAppointmentConfirmationDialog
+        open={isCancelDialogOpen}
+        onOpenChange={setIsCancelDialogOpen}
+        appointment={appointmentToCancel}
+      />
+
+      <GiveReviewModal
+        open={isReviewModalOpen}
+        onOpenChange={setIsReviewModalOpen}
+        appointment={appointmentToReview}
+      />
     </div>
   )
 }

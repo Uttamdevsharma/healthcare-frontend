@@ -7,7 +7,7 @@ import {
     type IUpdateDoctorSchedulePayload,
 } from "@/types/doctorSchedule.types"
 
-export const getMyDoctorSchedules = async (queryString: string) => {
+export const getMyDoctorSchedules = async (queryString?: string) => {
   try {
     return await httpClient.get<IDoctorSchedule[]>(
       queryString
@@ -16,6 +16,15 @@ export const getMyDoctorSchedules = async (queryString: string) => {
     )
   } catch (error) {
     console.log("Error fetching doctor schedules:", error)
+    throw error
+  }
+}
+
+export const getAllDoctorSchedules = async () => {
+  try {
+    return await httpClient.get<IDoctorSchedule[]>("/doctor-schedules")
+  } catch (error) {
+    console.log("Error fetching all doctor schedules:", error)
     throw error
   }
 }

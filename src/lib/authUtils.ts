@@ -13,7 +13,7 @@ export type RouteConfig = {
 
 export const commonProtectedRoutes : RouteConfig = {
     exact : ["/my-profile", "/change-password"],
-    pattern : []
+    pattern : [/^\/video-call\// ] // Matches any path that starts with /video-call
 }
 
 export const doctorProtectedRoutes : RouteConfig = {
