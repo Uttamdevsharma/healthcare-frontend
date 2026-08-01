@@ -89,8 +89,11 @@ export const appointmentsColumns: ColumnDef<IAppointment>[] = [
     id: "createdAt",
     accessorKey: "createdAt",
     header: "Booked On",
-    cell: ({ row }) => (
-      <DateCell date={row.original.createdAt as string ?? ""} formatString="MMM dd, yyyy" />
-    ),
+    cell: ({ row }) => {
+      const createdAt = row.original.createdAt;
+      return (
+        <DateCell date={createdAt} formatString="MMM dd, yyyy" />
+      );
+    },
   },
 ];

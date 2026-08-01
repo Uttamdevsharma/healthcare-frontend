@@ -1,11 +1,10 @@
 "use server";
 
 import { httpClient } from "@/lib/axios/httpClient";
-import { IUser } from "@/types/auth.types";
 
 export const verifyEmailAction = async (payload: { email: string; otp: string }) => {
   try {
-    const response = await httpClient.post<{ success: boolean; message?: string; data?: IUser }>(
+    const response = await httpClient.post<{ success: boolean; message?: string; data?: any }>(
       "/auth/verify-email",
       payload
     );

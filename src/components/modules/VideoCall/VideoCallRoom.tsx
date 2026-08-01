@@ -162,7 +162,7 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
                 <div className="flex flex-col items-center gap-4 p-8 text-center">
                   <Avatar className="size-28 ring-4 ring-primary/30">
                     <AvatarImage
-                      src={appointment.doctor?.profilePhoto || appointment.patient?.profilePhoto}
+                      src={appointment.doctor?.profilePhoto}
                       alt={otherPartyName}
                     />
                     <AvatarFallback className="bg-primary/20 text-3xl font-bold text-primary">

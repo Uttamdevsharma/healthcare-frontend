@@ -1,7 +1,6 @@
 "use server";
 
 import { httpClient } from "@/lib/axios/httpClient";
-import { IUser } from "@/types/auth.types";
 
 export const forgotPasswordAction = async (payload: { email: string }) => {
   try {
