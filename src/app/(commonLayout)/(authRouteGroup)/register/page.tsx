@@ -1,5 +1,5 @@
 "use client";
-import { registerAction } from "./register/_action";
+import { registerAction } from "../register/_action";
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -27,7 +27,7 @@ const RegisterPage = () => {
     onSubmit: async ({ value }) => {
       setServerError(null);
       try {
-        const result = await mutateAsync(value);
+        const result = await mutateAsync(value) as any;
 
         if (!result.success) {
           setServerError(result.message || "Registration failed");
