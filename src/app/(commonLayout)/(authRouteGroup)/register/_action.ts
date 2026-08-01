@@ -1,11 +1,10 @@
 "use server";
 
 import { httpClient } from "@/lib/axios/httpClient";
-import { IUser } from "@/types/auth.types";
 
 export const registerAction = async (payload: any) => {
   try {
-    const response = await httpClient.post<{ success: boolean; message?: string; data?: IUser }>(
+    const response = await httpClient.post<{ success: boolean; message?: string; data?: any }>(
       "/auth/register",
       payload
     );
