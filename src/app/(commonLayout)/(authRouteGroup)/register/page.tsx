@@ -27,15 +27,16 @@ const RegisterPage = () => {
     onSubmit: async ({ value }) => {
       setServerError(null);
       try {
-        const result = await mutateAsync(value) as any;
+        const result = await mutateAsync(value);
 
         if (!result.success) {
           setServerError(result.message || "Registration failed");
           return;
         }
-      } catch (error: any) {
-        console.log(`Registration failed: ${error.message}`);
-        setServerError(`Registration failed: ${error.message}`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Registration failed";
+        console.log(`Registration failed: ${errorMessage}`);
+        setServerError(`Registration failed: ${errorMessage}`);
       }
     },
   });

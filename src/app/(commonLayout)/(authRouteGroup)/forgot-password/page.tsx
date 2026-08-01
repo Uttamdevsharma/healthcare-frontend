@@ -1,5 +1,5 @@
 "use client";
-import { forgotPasswordAction } from "./forgot-password/_action";
+import { forgotPasswordAction } from "../forgot-password/_action";
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -34,9 +34,10 @@ const ForgotPasswordPage = () => {
         }
 
         setIsSuccess(true);
-      } catch (error: any) {
-        console.log(`Forgot password failed: ${error.message}`);
-        setServerError(`Forgot password failed: ${error.message}`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to send reset email";
+        console.log(`Forgot password failed: ${errorMessage}`);
+        setServerError(`Forgot password failed: ${errorMessage}`);
       }
     },
   });

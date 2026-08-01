@@ -1,6 +1,6 @@
 "use client";
 import { useSearchParams } from "next/navigation";
-import { resetPasswordAction } from "./reset-password/_action";
+import { resetPasswordAction } from "../reset-password/_action";
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -39,9 +39,10 @@ const ResetPasswordPage = () => {
         }
 
         setIsSuccess(true);
-      } catch (error: any) {
-        console.log(`Reset password failed: ${error.message}`);
-        setServerError(`Reset password failed: ${error.message}`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to reset password";
+        console.log(`Reset password failed: ${errorMessage}`);
+        setServerError(`Reset password failed: ${errorMessage}`);
       }
     },
   });

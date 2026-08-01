@@ -1,6 +1,6 @@
 "use client";
 import { useSearchParams } from "next/navigation";
-import { verifyEmailAction } from "./verify-email/_action";
+import { verifyEmailAction } from "../verify-email/_action";
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -38,9 +38,10 @@ const VerifyEmailPage = () => {
         }
 
         setIsSuccess(true);
-      } catch (error: any) {
-        console.log(`Verify email failed: ${error.message}`);
-        setServerError(`Verify email failed: ${error.message}`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to verify email";
+        console.log(`Verify email failed: ${errorMessage}`);
+        setServerError(`Verify email failed: ${errorMessage}`);
       }
     },
   });

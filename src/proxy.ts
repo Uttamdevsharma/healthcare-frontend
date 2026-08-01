@@ -198,6 +198,7 @@ export const config = {
          * - _next/image (image optimization files)
          * - favicon.ico, sitemap.xml, robots.txt (metadata files)
          */
-        '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.well-known).*)',
+        // Exclude Next internals (/_next) so server actions and internal assets aren't intercepted
+        '/((?!api|_next|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.well-known).*)',
     ]
 }

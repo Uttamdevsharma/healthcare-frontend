@@ -3,6 +3,10 @@ import Specialities from "@/components/modules/Home/Specialties";
 import Steps from "@/components/modules/Home/Steps";
 import Testimonials from "@/components/modules/Home/Testimonials";
 import TopRatedDoctors from "@/components/modules/Home/TopRatedDoctors";
+import ConsultationFeatures from "@/components/modules/Home/ConsultationFeatures";
+import TrustIndicators from "@/components/modules/Home/TrustIndicators";
+import Comparison from "@/components/modules/Home/Comparison";
+import JoinProviders from "@/components/modules/Home/JoinProviders";
 import Head from "next/head";
 
 export default function Home() {
@@ -19,10 +23,14 @@ export default function Home() {
       </Head>
       <main>
         <Hero />
+        <TrustIndicators />
         <Specialities />
-        <TopRatedDoctors />
         <Steps />
+        <ConsultationFeatures />
+        <TopRatedDoctors />
+        <Comparison />
         <Testimonials />
+        <JoinProviders />
       </main>
     </>
   );
