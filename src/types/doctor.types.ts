@@ -27,6 +27,9 @@ export interface IDoctor {
     designation: string;
     averageRating: number;
     createdAt: Date;
+    _count?: {
+        reviews: number;
+    };
     user : {
         status : UserStatus
     };

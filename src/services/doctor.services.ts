@@ -25,6 +25,16 @@ export const getAllSpecialties = async () => {
     }
 }
 
+export const getTopRatedDoctors = async (limit = 3) => {
+    try {
+        const doctors = await httpClient.get<IDoctor[]>(`/doctors/top-rated?limit=${limit}`);
+        return doctors;
+    } catch (error) {
+        console.log("Error fetching top rated doctors:", error);
+        throw error;
+    }
+}
+
 export const createDoctor = async (payload: ICreateDoctorPayload) => {
     try {
         const response = await httpClient.post<IDoctor>("/users/create-doctor", payload);
