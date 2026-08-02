@@ -1,9 +1,24 @@
-import { HeartPulse, Brain, Bone, Baby, Eye, Ear, Stethoscope, Activity, Scissors, Syringe } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import Link from 'next/link';
+import { Stethoscope } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
+import { type ISpecialty } from "@/types/specialty.types";
 
-const SPECIALTIES_FILTER_KEY = 'specialties.specialty.title';
+const SPECIALTIES_FILTER_KEY = "specialties.specialty.title";
+const CACHE_TAG = "landing-specialties";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+const FALLBACK_BG_COLORS = [
+  "bg-red-100 text-red-500",
+  "bg-blue-100 text-blue-500",
+  "bg-pink-100 text-pink-500",
+  "bg-green-100 text-green-500",
+  "bg-purple-100 text-purple-500",
+  "bg-yellow-100 text-yellow-500",
+  "bg-teal-100 text-teal-500",
+  "bg-orange-100 text-orange-500",
+];
 
 const getSpecialtyHref = (title: string) => {
   const query = new URLSearchParams();
@@ -11,66 +26,35 @@ const getSpecialtyHref = (title: string) => {
   return `/consultation?${query.toString()}`;
 };
 
-const specialists = [
-  {
-    name: 'Cardiology',
-    icon: HeartPulse,
-    description: 'Expert care for your heart and cardiovascular system.',
-    bgColor: 'bg-red-100',
-    iconColor: 'text-red-500',
-  },
-  {
-    name: 'Neurology',
-    icon: Brain,
-    description: 'Advanced treatments for brain and nervous system disorders.',
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-500',
-  },
-  {
-    name: 'Orthopedic',
-    icon: Bone,
-    description: 'Comprehensive care for bones, joints, and muscles.',
-    bgColor: 'bg-pink-100',
-    iconColor: 'text-pink-500',
-  },
-  {
-    name: 'Pediatrics',
-    icon: Baby,
-    description: 'Specialized healthcare for infants, children, and adolescents.',
-    bgColor: 'bg-green-100',
-    iconColor: 'text-green-500',
-  },
-  {
-    name: 'Ophthalmology',
-    icon: Eye,
-    description: 'Complete eye care, vision correction, and eye surgery.',
-    bgColor: 'bg-purple-100',
-    iconColor: 'text-purple-500',
-  },
-  {
-    name: 'Dermatology',
-    icon: Scissors, // Using Scissors as a proxy for surgery/dermatology
-    description: 'Expert treatments for skin, hair, and nail conditions.',
-    bgColor: 'bg-yellow-100',
-    iconColor: 'text-yellow-500',
-  },
-  {
-    name: 'General Medicine',
-    icon: Stethoscope,
-    description: 'Primary care and comprehensive health management.',
-    bgColor: 'bg-teal-100',
-    iconColor: 'text-teal-500',
-  },
-  {
-    name: 'Psychiatry',
-    icon: Activity,
-    description: 'Mental health evaluation, therapy, and counseling.',
-    bgColor: 'bg-orange-100',
-    iconColor: 'text-orange-500',
+const getSpecialties = async (): Promise<ISpecialty[]> => {
+  if (!API_BASE_URL) {
+    return [];
   }
-];
 
-const Specialities = () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/specialties`, {
+      next: { revalidate: 3600, tags: [CACHE_TAG] },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch specialties (${response.status})`);
+    }
+
+    const payload = (await response.json()) as { data?: ISpecialty[] };
+    return payload.data ?? [];
+  } catch (error) {
+    console.error("Error fetching specialties:", error);
+    return [];
+  }
+};
+
+const Specialities = async () => {
+  const specialties = await getSpecialties();
+
+  if (specialties.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-24 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -82,10 +66,10 @@ const Specialities = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {specialists.map((specialist) => (
+          {specialties.map((specialty, index) => (
             <Link
-              key={specialist.name}
-              href={getSpecialtyHref(specialist.name)}
+              key={specialty.id}
+              href={getSpecialtyHref(specialty.title)}
               className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl"
             >
               <Card
@@ -97,20 +81,28 @@ const Specialities = () => {
                    <div
                     className={cn(
                       'w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-6',
-                      specialist.bgColor
+                      FALLBACK_BG_COLORS[index % FALLBACK_BG_COLORS.length]
                     )}
                   >
-                    <specialist.icon
-                      className={cn(specialist.iconColor)}
-                      size={32}
-                    />
+                    {specialty.icon ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={specialty.icon}
+                        alt={specialty.title}
+                        className="w-full h-full object-cover rounded-2xl"
+                      />
+                    ) : (
+                      <Stethoscope size={32} />
+                    )}
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-2">
-                    {specialist.name}
+                    {specialty.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {specialist.description}
-                  </p>
+                  {specialty.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {specialty.description}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </Link>

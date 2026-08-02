@@ -6,6 +6,7 @@ import { getIconComponent } from "@/lib/iconMapper"
 import { cn } from "@/lib/utils"
 import { NavSection } from "@/types/dashboard.types"
 import { UserInfo } from "@/types/user.types"
+import { HeartPulse } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -25,8 +26,13 @@ const DashboardSidebarContent = ({dashboardHome, navItems, userInfo} : Dashboard
     <div className="hidden md:flex h-full w-64 flex-col border-r bg-card overflow-y-auto">
       {/* Logo / Brand */}
       <div className="flex h-16 items-center border-b px-6">
-        <Link href={dashboardHome}>
-          <span className="text-xl font-bold text-primary">PH Healthcare</span>
+        <Link href={dashboardHome} className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+            <HeartPulse className="h-4 w-4" />
+          </span>
+          <span className="text-lg font-bold text-foreground">
+            Kalinga<span className="text-muted-foreground"> Health</span>
+          </span>
         </Link>
       </div>
 

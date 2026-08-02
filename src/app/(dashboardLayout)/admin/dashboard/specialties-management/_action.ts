@@ -3,6 +3,9 @@
 import { createSpecialty, deleteSpecialty } from "@/services/specialty.services";
 import { ApiErrorResponse, ApiResponse } from "@/types/api.types";
 import { ISpecialty } from "@/types/specialty.types";
+import { revalidateTag } from "next/cache";
+
+const CACHE_TAG = "landing-specialties";
 
 const getActionErrorMessage = (error: unknown, fallbackMessage: string) => {
   if (
@@ -31,7 +34,9 @@ export const createSpecialtyAction = async (
   formData: FormData
 ): Promise<ApiResponse<ISpecialty> | ApiErrorResponse> => {
   try {
-    return await createSpecialty(formData);
+    const result = await createSpecialty(formData);
+    revalidateTag(CACHE_TAG, "max");
+    return result;
   } catch (error: unknown) {
     return {
       success: false,
@@ -51,7 +56,9 @@ export const deleteSpecialtyAction = async (
   }
 
   try {
-    return await deleteSpecialty(id);
+    const result = await deleteSpecialty(id);
+    revalidateTag(CACHE_TAG, "max");
+    return result;
   } catch (error: unknown) {
     return {
       success: false,

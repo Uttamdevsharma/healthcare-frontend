@@ -61,7 +61,7 @@ export function Hero({
   //   };
 
   return (
-    <div className="w-full relative">
+    <div className="relative flex w-full min-h-[calc(100svh-4rem)] items-center">
       {/* Radial Gradient Background from Bottom */}
       <div
         className="absolute inset-0 z-0 "
@@ -71,7 +71,7 @@ export function Hero({
         }}
       />
       {/* Content Container */}
-      <div className="w-full px-4 py-8 md:px-8 lg:px-16 relative">
+      <div className="relative w-full px-4 py-8 md:px-8 lg:px-16">
         <div className="mx-auto max-w-[1200px]">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
             {/* Left Column - Hero Content */}

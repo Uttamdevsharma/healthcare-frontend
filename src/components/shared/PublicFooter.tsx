@@ -9,9 +9,11 @@ function PublicFooter() {
           {/* Brand & About */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-2">
-              <HeartPulse className="h-8 w-8 text-primary" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+                <HeartPulse className="h-5 w-5" />
+              </span>
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                PH Doc
+                Kalinga Health
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed mt-4">
@@ -86,7 +88,7 @@ function PublicFooter() {
         </div>
 
         <div className="mt-16 pt-8 border-t flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} PH Doc. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Kalinga Health. All Rights Reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="#" className="hover:text-primary transition-colors">Terms</Link>
             <Link href="#" className="hover:text-primary transition-colors">Privacy</Link>
