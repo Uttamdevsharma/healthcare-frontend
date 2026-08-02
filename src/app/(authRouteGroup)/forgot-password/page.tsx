@@ -4,10 +4,11 @@ import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { IForgotPasswordPayload, forgotPasswordZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { CheckCircle2, KeyRound, Mail } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 const ForgotPasswordPage = () => {
@@ -43,24 +44,28 @@ const ForgotPasswordPage = () => {
   });
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Forgot Password</CardTitle>
-        <CardDescription>
-          Enter your email to receive a password reset link.
-        </CardDescription>
-      </CardHeader>
+    <div className="space-y-6">
+      <div className="space-y-2 text-center lg:text-left">
+        <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary lg:mx-0">
+          <KeyRound className="size-6" />
+        </span>
+        <h1 className="text-3xl font-bold tracking-tight">Forgot your password?</h1>
+        <p className="text-sm text-muted-foreground">
+          No worries — enter your email and we&apos;ll send you a password reset link.
+        </p>
+      </div>
 
-      <CardContent>
+      <div className="rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
         {isSuccess ? (
           <div className="space-y-4">
-            <Alert variant="default" className="bg-green-50 text-green-800 border-green-200">
+            <Alert className="rounded-lg border-success/30 bg-success/10 text-success-foreground">
+              <CheckCircle2 className="size-4" />
               <AlertDescription>
                 If an account exists with that email, you will receive a password reset link shortly.
               </AlertDescription>
             </Alert>
             <Button
-              className="w-full"
+              className="h-11 w-full rounded-lg text-sm font-semibold"
               onClick={() => setIsSuccess(false)}
             >
               Try Again
@@ -87,13 +92,15 @@ const ForgotPasswordPage = () => {
                   field={field}
                   label="Email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="you@example.com"
+                  inputClassName="h-11 rounded-lg"
+                  prepend={<Mail className="size-4.5" aria-hidden="true" />}
                 />
               )}
             </form.Field>
 
             {serverError && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="rounded-lg">
                 <AlertDescription>{serverError}</AlertDescription>
               </Alert>
             )}
@@ -102,21 +109,27 @@ const ForgotPasswordPage = () => {
               selector={(s) => [s.canSubmit, s.isSubmitting] as const}
             >
               {([canSubmit, isSubmitting]) => (
-                <AppSubmitButton isPending={isSubmitting || isPending} pendingLabel="Sending Reset Link..." disabled={!canSubmit}>
+                <AppSubmitButton
+                  isPending={isSubmitting || isPending}
+                  pendingLabel="Sending Reset Link..."
+                  disabled={!canSubmit}
+                  className="h-11 rounded-lg text-sm font-semibold"
+                >
                   Send Reset Link
                 </AppSubmitButton>
               )}
             </form.Subscribe>
           </form>
         )}
+      </div>
 
-        <div className="mt-6 text-center">
-          <a href="/login" className="text-sm text-primary hover:underline underline-offset-4">
-            Back to Login
-          </a>
-        </div>
-      </CardContent>
-    </Card>
+      <p className="text-center text-sm text-muted-foreground">
+        Remembered it?{" "}
+        <Link href="/login" className="font-medium text-primary hover:underline underline-offset-4">
+          Back to login
+        </Link>
+      </p>
+    </div>
   );
 };
 

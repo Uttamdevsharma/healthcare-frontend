@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, User, LogOut, LayoutDashboard, HeartPulse } from "lucide-react";
+import { Menu, LogOut, LayoutDashboard, HeartPulse } from "lucide-react";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../ui/sheet";
 import { UserRole, getDefaultDashboardRoute } from "@/lib/authUtils";
@@ -52,8 +52,8 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
           <BrandLogo />
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden items-center gap-1 rounded-full bg-muted/60 p-1 md:flex">
+        {/* Center Nav */}
+        <nav className="hidden items-center justify-center gap-1 md:flex">
           {navItems.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -63,7 +63,7 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
                 className={cn(
                   "rounded-full px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -80,7 +80,7 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
               <Link href={getDefaultDashboardRoute(userRole)}>
                 <Button
                   variant="outline"
-                  className="border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
+                  className="rounded-full border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
                 >
                   <LayoutDashboard className="mr-2 h-4 w-4" />
                   Dashboard
@@ -90,19 +90,28 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
                 variant="default"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 {isLoggingOut ? "Logging out..." : "Logout"}
               </Button>
             </>
           ) : (
-            <Link href="/login">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <User className="mr-2 h-4 w-4" />
-                Login
-              </Button>
-            </Link>
+            <>
+              <Link href="/register">
+                <Button
+                  variant="outline"
+                  className="rounded-full border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
+                >
+                  Sign Up
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
+                  Login
+                </Button>
+              </Link>
+            </>
           )}
         </div>
 
@@ -162,12 +171,20 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
                       </button>
                     </div>
                   ) : (
-                    <Link
-                      href="/login"
-                      className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-foreground hover:bg-accent"
-                    >
-                      <User className="h-5 w-5" /> Login
-                    </Link>
+                    <div className="flex flex-col gap-2">
+                      <Link
+                        href="/register"
+                        className="flex items-center justify-center gap-3 rounded-lg bg-primary px-4 py-3 text-base font-medium text-primary-foreground"
+                      >
+                        Sign Up
+                      </Link>
+                      <Link
+                        href="/login"
+                        className="flex items-center justify-center gap-3 rounded-lg border border-primary/30 px-4 py-3 text-base font-medium text-primary"
+                      >
+                        Login
+                      </Link>
+                    </div>
                   )}
                 </div>
               </nav>

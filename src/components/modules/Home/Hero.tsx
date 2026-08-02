@@ -1,154 +1,134 @@
-import { Search, Calendar, Star, SparkleIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import {
+  CalendarCheck,
+  MessagesSquare,
+  Building2,
+  HeartPulse,
+  Pill,
+  FlaskConical,
+} from "lucide-react";
+import { getAllSpecialties } from "@/services/doctor.services";
+import { ISpecialty } from "@/types/specialty.types";
+import HeroSearchBar from "./HeroSearchBar";
 
+const fallbackSpecialties: ISpecialty[] = [
+  "General Physician",
+  "Cardiologist",
+  "Dermatologist",
+  "Pediatrician",
+  "Orthopedic",
+].map((title, index) => ({ id: `fallback-${index}`, title }));
 
-export function Hero({
-  badge = {
-    text: "AI-Powered Healthcare",
-  },
-  heading = {
-    line1: "Find Your Perfect",
-    line2: "Doctor with AI",
-  },
-  description = [
-    "Our advanced AI technology analyzes your symptoms, medical",
-    "history, and preferences to match you with the best-fit doctors",
-    "in seconds.",
-  ],
-  buttons = {
-    primary: {
-      text: "Find Your Doctor",
-    },
-    secondary: {
-      text: "Book Appointment",
-    },
-  },
-  stats = [
-    { value: "50K+", label: "Patients Served" },
-    { value: "1000+", label: "Expert Doctors" },
-    {
-      value: "4.9",
-      label: "Patient Rating",
-      icon: <Star className="size-6 fill-yellow-400 stroke-yellow-400" />,
-    },
-  ],
-  formCard = {
-    title: "Ask our AI",
-    symptomLabel: "For which issue you want to consult?",
-    symptomPlaceholder: "e.g., heart, nurology, kideny, fever",
-    specialtyLabel: "Preferred specialty",
-    specialtyOptions: [
-      "General Physician",
-      "Cardiologist",
-      "Dermatologist",
-      "Pediatrician",
-      "Orthopedic",
-    ],
-    defaultSpecialty: "General Physician",
-    submitText: "Get AI Recommendations",
-    footerText:
-      "✨ Powered by advanced AI algorithms for accurate doctor matching",
-  },
-}) {
-  //   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //     e.preventDefault();
-  //     const formData = new FormData(e.currentTarget);
-  //     const data = {
-  //       symptoms: formData.get('symptoms') as string,
-  //       specialty: formData.get('specialty') as string,
-  //     };
-  //     formCard.onSubmit?.(data);
-  //   };
+const quickAccessItems = [
+  { icon: CalendarCheck, label: "Book Appointment", href: "/consultation" },
+  { icon: MessagesSquare, label: "Talk to Doctors", href: "/consultation" },
+  { icon: Building2, label: "Hospitals & Clinics", href: "/diagnostics" },
+  { icon: HeartPulse, label: "Healthcare", href: "/health-plans" },
+  { icon: Pill, label: "E-Pharmacy", href: "/medicine" },
+  { icon: FlaskConical, label: "Lab Testing", href: "/diagnostics" },
+];
+
+export async function Hero() {
+  let specialties: ISpecialty[] = fallbackSpecialties;
+  try {
+    const response = await getAllSpecialties();
+    const data = response?.data;
+    if (Array.isArray(data) && data.length > 0) {
+      specialties = data;
+    }
+  } catch {
+    specialties = fallbackSpecialties;
+  }
 
   return (
-    <div className="relative flex w-full min-h-[calc(100svh-4rem)] items-center">
-      {/* Radial Gradient Background from Bottom */}
+    <div className="relative w-full overflow-hidden">
+      {/* Radial Gradient Background */}
       <div
-        className="absolute inset-0 z-0 "
+        className="absolute inset-0 z-0"
         style={{
           background:
             "radial-gradient(125% 125% at 50% 90%, #fff 30%, #155DFC 100%)",
         }}
       />
+      {/* Decorative Blobs */}
+      <div className="pointer-events-none absolute -left-20 top-16 z-0 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-0 z-0 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
+
       {/* Content Container */}
-      <div className="relative w-full px-4 py-8 md:px-8 lg:px-16">
+      <div className="relative z-10 px-4 pb-28 pt-8 md:px-8 lg:px-16 lg:pt-12">
         <div className="mx-auto max-w-[1200px]">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center lg:gap-8">
             {/* Left Column - Hero Content */}
             <div className="flex flex-col justify-center space-y-6">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-3 self-start rounded-full bg-white px-4 py-2">
-                <SparkleIcon />
-                <span className="text-[11.9px] font-medium text-blue-700">
-                  {badge.text}
-                </span>
-              </div>
-
               {/* Heading */}
               <div className="space-y-2">
-                <h1 className="text-[51px] leading-[60px]">{heading.line1}</h1>
-                <h1 className="text-[51px] leading-[60px]">{heading.line2}</h1>
+                <h1 className="text-[44px] font-bold leading-[52px] tracking-tight text-foreground sm:text-[51px] sm:leading-[60px]">
+                  Find Your Perfect
+                </h1>
+                <h1 className="text-[44px] font-bold leading-[52px] tracking-tight text-foreground sm:text-[51px] sm:leading-[60px]">
+                  Doctor with{" "}
+                  <span className="bg-gradient-to-r from-blue-600 to-primary bg-clip-text text-transparent">
+                    AI
+                  </span>
+                </h1>
               </div>
 
               {/* Description */}
-              <div className="space-y-1 text-[17px] leading-7 text-gray-600">
-                {description.map((line, index) => (
-                  <p key={index}>{line}</p>
-                ))}
+              <div className="space-y-1 text-[16px] leading-7 text-gray-600">
+                <p>
+                  Our advanced AI technology analyzes your symptoms, medical
+                </p>
+                <p>
+                  history, and preferences to match you with the best-fit
+                  doctors
+                </p>
+                <p>in seconds.</p>
               </div>
 
-              {/* Buttons */}
-              <div className="flex flex-col gap-4 sm:flex-row">
-                {buttons.primary && (
-                  <Button className="h-[63.622px] gap-3 rounded-xl bg-blue-600 px-8 text-[15.3px] hover:bg-blue-700">
-                    <Search className="size-5" />
-                    {buttons.primary.text}
-                  </Button>
-                )}
-                {buttons.secondary && (
-                  <Button
-                    variant="outline"
-                    className="h-[63.622px] gap-3 rounded-xl border-blue-600 px-8 text-[15.3px] text-blue-600 hover:bg-blue-50"
-                  >
-                    <Calendar className="size-5" />
-                    {buttons.secondary.text}
-                  </Button>
-                )}
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 pt-4">
-                {stats.map((stat, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[25.5px] leading-9">{stat.value}</p>
-                      {stat.icon}
-                    </div>
-                    <p className="text-[13.6px] leading-6 text-gray-600">
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {/* Search Bar */}
+              <HeroSearchBar specialties={specialties} />
             </div>
 
-            {/* Right Column - Form Card */}
-            <div className="flex items-center justify-center lg:justify-end">
-              <div className="w-full max-w-[559.929px] rounded-2xl bg-white p-8 shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)]">
-                {/* Card Header */}
-                <div className="mb-6 flex items-center justify-between">
-                  <h2 className="text-[20.4px] leading-6">{formCard.title}</h2>
-                  <SparkleIcon />
-                </div>
-
-                {/* Footer */}
-                <div className="mt-6 border-t border-gray-200 pt-4">
-                  <p className="text-center text-[11.9px] leading-5 text-gray-600">
-                    {formCard.footerText}
-                  </p>
-                </div>
+            {/* Right Column - Doctor Image */}
+            <div className="relative flex justify-center lg:justify-end">
+              <div className="pointer-events-none absolute -bottom-6 left-1/2 z-0 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-blue-400/30 blur-3xl" />
+              <div className="pointer-events-none absolute right-4 top-8 z-0 h-40 w-40 rounded-full bg-white/30 blur-2xl" />
+              <div className="relative z-10">
+                <Image
+                  src="/hero-doctor.png"
+                  alt="Doctor providing healthcare"
+                  width={2965}
+                  height={3810}
+                  priority
+                  className="w-auto object-contain sm:max-h-[520px] lg:max-h-[580px]"
+                />
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Floating Feature Bar */}
+      <div className="absolute inset-x-0 bottom-0 z-20 px-4 pb-6 md:px-8 lg:px-16">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="grid grid-cols-2 gap-2 rounded-3xl bg-white/90 p-4 shadow-[0px_20px_50px_-12px_rgba(0,0,0,0.3)] backdrop-blur sm:grid-cols-3 lg:grid-cols-6 lg:gap-3 lg:p-5">
+            {quickAccessItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="group flex flex-col items-center gap-2 rounded-2xl px-2 py-3 text-center transition-colors hover:bg-blue-50"
+                >
+                  <span className="flex size-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600 transition-colors group-hover:from-blue-600 group-hover:to-primary group-hover:text-white">
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="text-[12.5px] font-medium leading-4 text-foreground">
+                    {item.label}
+                  </span>
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>

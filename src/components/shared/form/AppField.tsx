@@ -24,6 +24,7 @@ type AppFieldProps = {
     append ?: React.ReactNode;
     prepend ?: React.ReactNode;
     className ?: string;
+    inputClassName ?: string;
     disabled ?: boolean;
 }
 
@@ -35,6 +36,7 @@ const AppField = ({
     append,
     prepend,
     className,
+    inputClassName,
     disabled = false,
 } : AppFieldProps) => {
 
@@ -46,14 +48,14 @@ const AppField = ({
     <div className={cn("space-y-1.5", className)}>
         <Label
             htmlFor={field.name}
-            className={cn(hasError && "text-destructive")}
+            className={cn("text-sm font-medium text-foreground", hasError && "text-destructive")}
         >
             {label}
         </Label>
 
         <div className="relative">
             {
-                prepend && (<div className="absolute inset-y-0 left-0 items-center pl-3 pointer-events-none z-10">
+                prepend && (<div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3.5 text-muted-foreground">
                     {prepend}
                 </div>)
             }
@@ -70,14 +72,16 @@ const AppField = ({
                 aria-invalid={hasError}
                 aria-describedby={hasError ? `${field.name}-error` : undefined}
                 className={cn(
+                    "bg-background",
                     prepend && "pl-10",
-                    append && "pr-10",
+                    append && "pr-11",
                     hasError && "border-destructive focus-visible:ring-destructive/20",
+                    inputClassName,
                 )}
             />
 
             {
-                append && (<div className="absolute inset-y-0 right-0 items-center pr-3 pointer-events-none z-10">
+                append && (<div className="absolute inset-y-0 right-0 z-10 flex items-center pr-1.5">
                     {append}
                 </div>)
             }
@@ -87,7 +91,7 @@ const AppField = ({
                     <p
                      id={`${field.name}-error`}
                      role="alert"
-                     className="text-sm text-destructive" 
+                     className="mt-1 text-sm text-destructive" 
                     >
                         {firstError}
                     </p>
