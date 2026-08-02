@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { type ISpecialty } from "@/types/specialty.types";
 import { RotateCcw, SlidersHorizontal, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 export const SPECIALTIES_FILTER_KEY = "specialties.specialty.title";
 export const APPOINTMENT_FEE_FILTER_KEY = "appointmentFee";
@@ -61,6 +61,69 @@ interface ConsultationFiltersProps {
   className?: string;
 }
 
+const FeeRangeControl = ({
+  initialValue,
+  isLoading,
+  onApply,
+}: {
+  initialValue: DataTableRangeValue;
+  isLoading?: boolean;
+  onApply: (value: DataTableRangeValue) => void;
+}) => {
+  const [minFee, setMinFee] = useState(initialValue.gte ?? "");
+  const [maxFee, setMaxFee] = useState(initialValue.lte ?? "");
+
+  const handleApply = () => {
+    const next: DataTableRangeValue = {};
+    if (minFee.trim()) {
+      next.gte = minFee.trim();
+    }
+    if (maxFee.trim()) {
+      next.lte = maxFee.trim();
+    }
+    onApply(next);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Min</Label>
+          <Input
+            type="number"
+            min={0}
+            placeholder="0"
+            value={minFee}
+            onChange={(event) => setMinFee(event.target.value)}
+            disabled={isLoading}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Max</Label>
+          <Input
+            type="number"
+            min={0}
+            placeholder="Any"
+            value={maxFee}
+            onChange={(event) => setMaxFee(event.target.value)}
+            disabled={isLoading}
+          />
+        </div>
+      </div>
+      <Button
+        type="button"
+        size="sm"
+        variant="secondary"
+        className="w-full"
+        onClick={handleApply}
+        disabled={isLoading}
+      >
+        Apply fee range
+      </Button>
+    </div>
+  );
+};
+
 const ConsultationFilters = ({
   specialties,
   filterValues,
@@ -73,13 +136,6 @@ const ConsultationFilters = ({
   const feeRange = isRangeValue(filterValues[APPOINTMENT_FEE_FILTER_KEY])
     ? filterValues[APPOINTMENT_FEE_FILTER_KEY]
     : {};
-  const [minFee, setMinFee] = useState(feeRange.gte ?? "");
-  const [maxFee, setMaxFee] = useState(feeRange.lte ?? "");
-
-  useEffect(() => {
-    setMinFee(feeRange.gte ?? "");
-    setMaxFee(feeRange.lte ?? "");
-  }, [feeRange.gte, feeRange.lte]);
 
   const genderValue = typeof filterValues.gender === "string" ? filterValues.gender : "";
   const selectedSpecialties = Array.isArray(filterValues[SPECIALTIES_FILTER_KEY])
@@ -94,17 +150,6 @@ const ConsultationFilters = ({
       : [...selectedSpecialties, value];
 
     onFilterChange(SPECIALTIES_FILTER_KEY, next.length > 0 ? next : undefined);
-  };
-
-  const handleRangeApply = () => {
-    const next: DataTableRangeValue = {};
-    if (minFee.trim()) {
-      next.gte = minFee.trim();
-    }
-    if (maxFee.trim()) {
-      next.lte = maxFee.trim();
-    }
-    onFilterChange(APPOINTMENT_FEE_FILTER_KEY, Object.keys(next).length > 0 ? next : undefined);
   };
 
   return (
@@ -224,40 +269,17 @@ const ConsultationFilters = ({
 
       <div className="space-y-3">
         <Label>Consultation Fee</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Min</Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={minFee}
-              onChange={(event) => setMinFee(event.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Max</Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="Any"
-              value={maxFee}
-              onChange={(event) => setMaxFee(event.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          className="w-full"
-          onClick={handleRangeApply}
-          disabled={isLoading}
-        >
-          Apply fee range
-        </Button>
+        <FeeRangeControl
+          key={JSON.stringify(feeRange)}
+          initialValue={feeRange}
+          isLoading={isLoading}
+          onApply={(next) =>
+            onFilterChange(
+              APPOINTMENT_FEE_FILTER_KEY,
+              Object.keys(next).length > 0 ? next : undefined,
+            )
+          }
+        />
       </div>
     </div>
   );

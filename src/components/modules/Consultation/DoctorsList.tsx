@@ -34,7 +34,6 @@ import {
 import { useServerManagedDataTableSearch } from "@/hooks/useServerManagedDataTableSearch"
 import { getAllSpecialties, getDoctors } from "@/services/doctor.services"
 import { type IDoctor } from "@/types/doctor.types"
-import { type ISpecialty } from "@/types/specialty.types"
 import { useQuery } from "@tanstack/react-query"
 import { MapPin, SearchX, SlidersHorizontal, Star, Stethoscope } from "lucide-react"
 import Link from "next/link"

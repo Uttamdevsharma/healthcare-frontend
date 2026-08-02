@@ -1,6 +1,15 @@
 import { HeartPulse, Brain, Bone, Baby, Eye, Ear, Stethoscope, Activity, Scissors, Syringe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
+import Link from 'next/link';
+
+const SPECIALTIES_FILTER_KEY = 'specialties.specialty.title';
+
+const getSpecialtyHref = (title: string) => {
+  const query = new URLSearchParams();
+  query.append(SPECIALTIES_FILTER_KEY, title);
+  return `/consultation?${query.toString()}`;
+};
 
 const specialists = [
   {
@@ -74,32 +83,37 @@ const Specialities = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {specialists.map((specialist) => (
-            <Card
+            <Link
               key={specialist.name}
-              className={cn(
-                'text-center transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-2 border-transparent hover:border-primary/20',
-              )}
+              href={getSpecialtyHref(specialist.name)}
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl"
             >
-              <CardContent className="p-8">
-                 <div
-                  className={cn(
-                    'w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-6',
-                    specialist.bgColor
-                  )}
-                >
-                  <specialist.icon
-                    className={cn(specialist.iconColor)}
-                    size={32}
-                  />
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">
-                  {specialist.name}
-                </h3>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {specialist.description}
-                </p>
-              </CardContent>
-            </Card>
+              <Card
+                className={cn(
+                  'text-center transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-2 border-transparent hover:border-primary/20',
+                )}
+              >
+                <CardContent className="p-8">
+                   <div
+                    className={cn(
+                      'w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-6',
+                      specialist.bgColor
+                    )}
+                  >
+                    <specialist.icon
+                      className={cn(specialist.iconColor)}
+                      size={32}
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">
+                    {specialist.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {specialist.description}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
