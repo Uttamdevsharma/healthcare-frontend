@@ -23,11 +23,11 @@ export default function Home() {
       </Head>
       <main>
         <Hero />
-        <TrustIndicators />
         <Specialities />
+        <TopRatedDoctors />
+        <TrustIndicators />
         <Steps />
         <ConsultationFeatures />
-        <TopRatedDoctors />
         <Comparison />
         <Testimonials />
         <JoinProviders />

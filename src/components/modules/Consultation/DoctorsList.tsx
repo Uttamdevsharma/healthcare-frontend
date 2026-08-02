@@ -164,8 +164,8 @@ const DoctorCard = ({
       <div className="flex h-full flex-col p-5">
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
-            <Avatar className="size-16 bg-muted/40 ring-4 ring-muted/40 transition group-hover:ring-primary/10">
-              <AvatarImage src={doctor.profilePhoto} alt={doctor.name} />
+            <Avatar className="size-20 bg-muted/40 ring-4 ring-muted/40 transition group-hover:ring-primary/10">
+              <AvatarImage src={doctor.profilePhoto} alt={doctor.name} className="object-cover" />
               <AvatarFallback>{getDoctorInitials(doctor.name)}</AvatarFallback>
             </Avatar>
           </div>

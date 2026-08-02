@@ -4,11 +4,42 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMyAppointments } from "@/services/appointment.services";
 import { getMyPrescriptions } from "@/services/prescription.services";
 import { getMyReviews } from "@/services/review.services";
+import { getMyProfileAction } from "@/services/profile.services";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, FileText, Star, User, Video } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DoctorProfileEditModal } from "./DoctorProfileEditModal";
+
+interface IProfileData {
+  id: string;
+  name: string;
+  email: string;
+  profilePhoto?: string;
+  contactNumber?: string;
+  address?: string;
+  createdAt: string;
+  user?: {
+    id: string;
+    role: string;
+    status: string;
+    email: string;
+  };
+  doctor?: {
+    id: string;
+    userId: string;
+  };
+  designation?: string;
+  qualification?: string;
+  registrationNumber?: string;
+  experience?: number;
+  appointmentFee?: number;
+  gender?: string;
+  averageRating?: number;
+  currentWorkingPlace?: string;
+  specialties?: { specialty: { title: string } }[];
+}
 
 const DoctorDashboardContent = () => {
   const { data: appointmentsRes, isLoading: loadingAppointments } = useQuery({
@@ -26,9 +57,15 @@ const DoctorDashboardContent = () => {
     queryFn: getMyReviews,
   });
 
+  const { data: profileRes, isLoading: loadingProfile } = useQuery({
+    queryKey: ["my-profile-page"],
+    queryFn: () => getMyProfileAction() as Promise<{ success: boolean; data: IProfileData; message?: string }>,
+  });
+
   const appointments = appointmentsRes?.data ?? [];
   const prescriptions = prescriptionsRes?.data ?? [];
   const reviews = reviewsRes?.data ?? [];
+  const profile = profileRes?.data ?? null;
 
   const upcomingAppointments = appointments.filter(
     (a) => a.status === "SCHEDULED" || a.status === "INPROGRESS"
@@ -40,11 +77,31 @@ const DoctorDashboardContent = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Doctor Portal</h1>
-        <p className="text-muted-foreground">
-          Welcome back! Here is your daily practice overview.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Doctor Portal</h1>
+          <p className="text-muted-foreground">
+            Welcome back! Here is your daily practice overview.
+          </p>
+        </div>
+        {profile && profile.doctor && (
+          <DoctorProfileEditModal
+            doctorId={profile.doctor?.id}
+            initialData={{
+              name: profile.name,
+              contactNumber: profile.contactNumber,
+              address: profile.address,
+              registrationNumber: profile.registrationNumber || "",
+              experience: profile.experience,
+              gender: profile.gender as "MALE" | "FEMALE" | undefined,
+              appointmentFee: profile.appointmentFee,
+              qualification: profile.qualification || "",
+              currentWorkingPlace: profile.currentWorkingPlace || "",
+              designation: profile.designation || "",
+              profilePhoto: profile.profilePhoto,
+            }}
+          />
+        )}
       </div>
 
       {/* Metric Cards */}

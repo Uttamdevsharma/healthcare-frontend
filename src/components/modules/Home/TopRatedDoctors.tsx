@@ -20,12 +20,6 @@ import Link from "next/link";
 import { getTopRatedDoctors } from "@/services/doctor.services";
 import DoctorWishlistButton from "./DoctorWishlistButton";
 
-const getDoctorInitials = (name: string) => {
-  const parts = name.trim().split(/\s+/);
-  const initials = parts.slice(0, 2).map((part) => part[0]?.toUpperCase() ?? "");
-  return initials.join("") || "DR";
-};
-
 const getDoctorSpecialty = (doctor: IDoctor) => {
   const titles = doctor.specialties?.map((item) => item.specialty.title) ?? [];
   return titles[0] ?? doctor.designation ?? "Medical Specialist";
@@ -34,64 +28,115 @@ const getDoctorSpecialty = (doctor: IDoctor) => {
 const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
   const reviewCount = doctor._count?.reviews ?? 0;
   const rating = doctor.averageRating > 0 ? doctor.averageRating.toFixed(1) : "0.0";
+  const specialty = getDoctorSpecialty(doctor);
+  const fee = doctor.appointmentFee;
+  const location = doctor.currentWorkingPlace?.trim() || doctor.address?.trim();
+  const isAvailable = doctor.user?.status === UserStatus.ACTIVE;
+  const doctorProfileHref = `/consultation/doctor/${doctor.id}`;
 
   return (
-    <Card className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/60 bg-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-primary/10">
-      
-      {/* Top Header Decorator */}
-      <CardHeader className="relative flex flex-col items-center bg-gradient-to-b from-primary/10 via-primary/5 to-transparent p-6 pb-2">
-        {/* Verified Badge Icon (Optional Design Touch) */}
-        <div className="absolute right-4 top-4 text-primary/80" title="Verified Specialist">
-          <ShieldCheck size={20} />
+    <Card className="group relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-0 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-primary/10">
+      {/* Image Header */}
+       <div className="relative h-56 overflow-hidden rounded-t-2xl bg-muted/60 sm:h-64">
+         <Avatar className="size-full rounded-none">
+           <AvatarImage
+             src={doctor.profilePhoto}
+             alt={doctor.name}
+             className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+           />
+          <AvatarFallback className="rounded-none bg-transparent">
+            <UserRound className="size-20 text-muted-foreground/30" />
+          </AvatarFallback>
+        </Avatar>
+
+        {/* Rating Badge */}
+        <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-orange-500 px-2.5 py-1 text-xs font-bold text-white shadow-md shadow-black/10">
+          <Star className="size-3.5 fill-white text-white" />
+          {rating}
         </div>
 
-        {/* Avatar */}
-        <div className="relative mt-2">
-          <Avatar className="size-28 border-4 border-background shadow-lg transition-transform duration-300 group-hover:scale-105">
-            <AvatarImage src={doctor.profilePhoto} alt={doctor.name} className="object-cover" />
-            <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
-              {getDoctorInitials(doctor.name)}
-            </AvatarFallback>
-          </Avatar>
+        {/* Wishlist Button */}
+        <DoctorWishlistButton doctorName={doctor.name} />
+      </div>
+
+      {/* Middle Content */}
+      <CardContent className="flex-1 p-5 pb-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="line-clamp-1 text-xs font-semibold uppercase tracking-wide text-primary sm:text-sm">
+            {specialty}
+          </span>
+
+          {isAvailable && (
+            <Badge className="shrink-0 border-0 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              Available
+            </Badge>
+          )}
         </div>
-      </CardHeader>
 
-      <CardContent className="flex-1 p-6 pt-2 text-center">
-        {/* Specialty Badge */}
-        <Badge variant="secondary" className="mb-3 font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
-          {getDoctorSpecialty(doctor)}
-        </Badge>
-
-        {/* Doctor Name */}
-        <h3 className="text-xl font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+        <h3 className="mt-2 text-lg font-bold leading-snug text-foreground line-clamp-1 transition-colors group-hover:text-primary">
           {doctor.name}
         </h3>
 
-        {/* Designation / Qualifications (if available) */}
-        {doctor.qualification && (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-            {doctor.qualification}
-          </p>
-        )}
+        {(location || doctor.qualification || reviewCount > 0) && (
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+            {location && (
+              <span className="inline-flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="size-3.5 shrink-0" />
+                <span className="line-clamp-1">{location}</span>
+              </span>
+            )}
 
-        {/* Rating and Reviews */}
-        <div className="mt-4 flex items-center justify-center gap-1.5 rounded-full bg-muted/50 py-1.5 px-3 w-max mx-auto text-sm">
-          <Star className="size-4 text-amber-500 fill-amber-500" />
-          <span className="font-bold text-foreground">{rating}</span>
-          <span className="text-muted-foreground text-xs">
-            ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
-          </span>
-        </div>
+            {doctor.qualification && (
+              <span className="inline-flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+                <GraduationCap className="size-3.5 shrink-0" />
+                <span className="line-clamp-1">{doctor.qualification}</span>
+              </span>
+            )}
+
+            {reviewCount > 0 && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <MessageCircle className="size-3.5 shrink-0" />
+                {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
+              </span>
+            )}
+          </div>
+        )}
       </CardContent>
 
-      {/* Footer Action Buttons */}
-      <CardFooter className="grid grid-cols-2 gap-3 p-5 pt-0">
-        <Button asChild variant="outline" className="rounded-xl font-medium border-border/80 hover:bg-muted">
-          <Link href={`/consultation/doctor/${doctor.id}`}>View Profile</Link>
-        </Button>
-        <Button asChild className="rounded-xl font-medium shadow-md shadow-primary/20">
-          <Link href={`/consultation/doctor/${doctor.id}`}>Book Now</Link>
-        </Button>
+      {/* Bottom Action & Pricing Area */}
+      <CardFooter className="mt-auto items-center justify-between gap-3 border-t border-border/60 px-5 py-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            Consultation Fees
+          </p>
+          <p className="mt-0.5 text-lg font-extrabold leading-none text-foreground">
+            {fee > 0 ? `$${fee.toFixed(0)}` : "—"}
+          </p>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="rounded-full font-medium"
+          >
+            <Link href={doctorProfileHref}>View Profile</Link>
+          </Button>
+
+          <Button
+            asChild
+            size="icon"
+            className="size-10 rounded-full shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"
+            aria-label="Book Now"
+            title="Book Now"
+          >
+            <Link href={doctorProfileHref}>
+              <CalendarCheck className="size-5" />
+            </Link>
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
