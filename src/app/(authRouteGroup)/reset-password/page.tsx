@@ -63,7 +63,7 @@ const ResetPasswordPage = () => {
       <div className="rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
         {isSuccess ? (
           <div className="space-y-4">
-            <Alert className="rounded-lg border-success/30 bg-success/10 text-success-foreground">
+            <Alert className="rounded-lg border-success/30 bg-success/10 text-success">
               <CheckCircle2 className="size-4" />
               <AlertDescription>
                 Your password has been successfully reset. You can now log in with your new password.

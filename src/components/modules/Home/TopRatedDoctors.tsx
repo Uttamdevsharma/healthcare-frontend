@@ -1,16 +1,24 @@
-import { Star, ArrowRight, ShieldCheck, Calendar } from "lucide-react";
+import {
+  Star,
+  ArrowRight,
+  MapPin,
+  GraduationCap,
+  CalendarCheck,
+  MessageCircle,
+  UserRound,
+} from "lucide-react";
 import {
   Card,
   CardContent,
   CardFooter,
-  CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { UserStatus, type IDoctor } from "@/types/doctor.types";
 import Link from "next/link";
 import { getTopRatedDoctors } from "@/services/doctor.services";
-import { type IDoctor } from "@/types/doctor.types";
+import DoctorWishlistButton from "./DoctorWishlistButton";
 
 const getDoctorInitials = (name: string) => {
   const parts = name.trim().split(/\s+/);

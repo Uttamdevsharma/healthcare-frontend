@@ -5,4 +5,7 @@ export interface ISpecialty {
   icon?: string;
   createdAt?: string;
   updatedAt?: string;
+  _count?: {
+    doctorSpecialties?: number;
+  };
 }
