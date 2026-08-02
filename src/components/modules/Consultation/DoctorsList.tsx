@@ -1,11 +1,12 @@
 "use client"
 
-import DataTableFilters, {
-  DataTableFilterConfig,
-  DataTableFilterValues,
-} from "@/components/shared/table/DataTableFilters"
-import DataTableSearch from "@/components/shared/table/DataTableSearch"
+import ConsultationFilters, {
+  APPOINTMENT_FEE_FILTER_KEY,
+  SPECIALTIES_FILTER_KEY,
+  countActiveConsultationFilters,
+} from "@/components/modules/Consultation/ConsultationFilters"
 import BookAppointmentModal from "@/components/modules/Patient/Appointments/BookAppointmentModal"
+import DataTableSearch from "@/components/shared/table/DataTableSearch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useServerManagedDataTable } from "@/hooks/useServerManagedDataTable"
 import {
   serverManagedFilter,
@@ -26,14 +36,14 @@ import { getAllSpecialties, getDoctors } from "@/services/doctor.services"
 import { type IDoctor } from "@/types/doctor.types"
 import { type ISpecialty } from "@/types/specialty.types"
 import { useQuery } from "@tanstack/react-query"
+import { MapPin, SearchX, SlidersHorizontal, Star, Stethoscope } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 
 const DEFAULT_PAGE = 1
 const DEFAULT_LIMIT = 12
-const SPECIALTIES_FILTER_KEY = "specialties.specialty.title"
-const APPOINTMENT_FEE_FILTER_KEY = "appointmentFee"
+
 const CONSULTATION_ALLOWED_QUERY_KEYS = new Set([
   "page",
   "limit",
@@ -135,6 +145,122 @@ const Pagination = ({
   )
 }
 
+const DoctorCard = ({
+  doctor,
+  isAuthenticated,
+  viewerRole,
+}: {
+  doctor: IDoctor
+  isAuthenticated: boolean
+  viewerRole?: string | null
+}) => {
+  const specialtiesList = doctor.specialties?.map((item) => item.specialty.title) ?? []
+  const rating = doctor.averageRating ?? 0
+  const fee = doctor.appointmentFee
+
+  return (
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg">
+      <div className="h-1 w-full bg-linear-to-r from-cyan-500 via-sky-500 to-blue-600" />
+
+      <div className="flex h-full flex-col p-5">
+        <div className="flex items-start gap-4">
+          <div className="relative shrink-0">
+            <Avatar className="size-16 bg-muted/40 ring-4 ring-muted/40 transition group-hover:ring-primary/10">
+              <AvatarImage src={doctor.profilePhoto} alt={doctor.name} />
+              <AvatarFallback>{getDoctorInitials(doctor.name)}</AvatarFallback>
+            </Avatar>
+          </div>
+
+          <div className="min-w-0 space-y-0.5 pt-0.5">
+            <h3 className="truncate text-base font-semibold leading-tight">{doctor.name}</h3>
+            <p className="truncate text-xs font-medium text-primary">
+              {doctor.designation || "Medical Specialist"}
+            </p>
+            <p className="flex items-start gap-1 truncate text-xs text-muted-foreground">
+              <MapPin className="mt-0.5 size-3 shrink-0" />
+              <span className="truncate">{doctor.currentWorkingPlace || "Location not listed"}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 divide-x rounded-xl border bg-muted/30">
+          <div className="px-2 py-2.5 text-center">
+            <div className="flex items-center justify-center gap-1 text-sm font-semibold">
+              <Star className="size-3.5 fill-amber-400 text-amber-400" />
+              {rating > 0 ? rating.toFixed(1) : "0.0"}
+            </div>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">Rating</p>
+          </div>
+          <div className="px-2 py-2.5 text-center">
+            <p className="text-sm font-semibold">{doctor.experience ?? 0}y</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">Experience</p>
+          </div>
+          <div className="px-2 py-2.5 text-center">
+            <p className="text-sm font-semibold text-primary">
+              {fee != null ? `$${fee.toFixed(0)}` : "—"}
+            </p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">Fee</p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {specialtiesList.length > 0 ? (
+            specialtiesList.slice(0, 3).map((title) => (
+              <Badge key={`${doctor.id}-${title}`} variant="secondary" className="font-normal">
+                {title}
+              </Badge>
+            ))
+          ) : (
+            <Badge variant="secondary">General Practitioner</Badge>
+          )}
+        </div>
+
+        <div className="mt-auto grid gap-2 pt-5 sm:grid-cols-2">
+          <BookAppointmentModal
+            doctorId={String(doctor.id)}
+            doctorName={doctor.name}
+            isAuthenticated={isAuthenticated}
+            viewerRole={viewerRole}
+            triggerClassName="w-full"
+            fullWidth
+          />
+          <Button asChild variant="outline" className="w-full">
+            <Link href={`/consultation/doctor/${doctor.id}`}>View Profile</Link>
+          </Button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+const DoctorCardSkeleton = () => {
+  return (
+    <div className="flex h-full flex-col rounded-2xl border bg-card p-5 shadow-sm">
+      <div className="flex items-start gap-4">
+        <Skeleton className="size-16 shrink-0 rounded-full" />
+        <div className="flex-1 space-y-2 pt-1">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-3 w-1/2" />
+          <Skeleton className="h-3 w-2/3" />
+        </div>
+      </div>
+
+      <Skeleton className="mt-4 h-16 w-full rounded-xl" />
+
+      <div className="mt-4 flex gap-1.5">
+        <Skeleton className="h-5 w-16 rounded-full" />
+        <Skeleton className="h-5 w-20 rounded-full" />
+        <Skeleton className="h-5 w-14 rounded-full" />
+      </div>
+
+      <div className="mt-auto grid gap-2 pt-5 sm:grid-cols-2">
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+    </div>
+  )
+}
+
 const DoctorsList = ({
   initialQueryString,
   isAuthenticated,
@@ -145,6 +271,7 @@ const DoctorsList = ({
   viewerRole?: string | null
 }) => {
   const searchParams = useSearchParams()
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
 
   const {
     queryStringFromUrl,
@@ -198,207 +325,201 @@ const DoctorsList = ({
   const meta = doctorsResponse?.meta
   const specialties = useMemo(() => specialtiesResponse?.data ?? [], [specialtiesResponse?.data])
 
-  const filterConfigs = useMemo<DataTableFilterConfig[]>(() => {
-    return [
-      {
-        id: "gender",
-        label: "Gender",
-        type: "single-select",
-        options: [
-          { label: "Male", value: "MALE" },
-          { label: "Female", value: "FEMALE" },
-          { label: "Other", value: "OTHER" },
-        ],
-      },
-      {
-        id: SPECIALTIES_FILTER_KEY,
-        label: "Specialties",
-        type: "multi-select",
-        options: specialties.map((specialty: ISpecialty) => ({
-          label: specialty.title,
-          value: specialty.title,
-        })),
-      },
-      {
-        id: APPOINTMENT_FEE_FILTER_KEY,
-        label: "Fee Range",
-        type: "range",
-      },
-    ]
-  }, [specialties])
-
-  const filterValuesForControls = useMemo<DataTableFilterValues>(() => {
-    return {
-      gender: filterValues.gender,
-      [SPECIALTIES_FILTER_KEY]: filterValues[SPECIALTIES_FILTER_KEY],
-      [APPOINTMENT_FEE_FILTER_KEY]: filterValues[APPOINTMENT_FEE_FILTER_KEY],
-    }
-  }, [filterValues])
+  const totalActiveFilters = useMemo(
+    () => countActiveConsultationFilters(filterValues),
+    [filterValues],
+  )
 
   const isBusy = isLoading || isFetching || isRouteRefreshPending
 
+  const handleResetAll = () => {
+    updateParams((params) => {
+      CONSULTATION_ALLOWED_QUERY_KEYS.forEach((key) => params.delete(key))
+    }, { resetPage: true })
+  }
+
   return (
-    <section className="space-y-6 pb-8">
-      <div className="relative overflow-hidden rounded-2xl border bg-linear-to-br from-cyan-50 via-white to-blue-50 p-6">
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-blue-200/30 blur-2xl" />
-        <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-cyan-200/30 blur-2xl" />
-        <div className="relative space-y-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Consult With Our Specialists</h1>
-          <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
-            Discover trusted doctors, compare experience and fees, and open detailed profiles to find the right specialist.
+    <section className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden rounded-2xl border bg-linear-to-br from-primary/10 via-background to-secondary/20 p-6 sm:p-8">
+        <div className="absolute -right-10 -top-10 size-40 rounded-full bg-primary/10 blur-2xl" />
+        <div className="absolute -bottom-10 -left-10 size-36 rounded-full bg-secondary/30 blur-2xl" />
+        <div className="relative max-w-3xl space-y-3">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Stethoscope className="size-5" />
+            </span>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              Consult With Our Specialists
+            </h1>
+          </div>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            Discover trusted doctors, compare experience and fees, and open detailed profiles to find
+            the right specialist.
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
-        <div className="flex flex-wrap items-start gap-3">
-          <DataTableSearch
-            key={searchTermFromUrl}
-            initialValue={searchTermFromUrl}
-            placeholder="Search doctor by name, qualification, email..."
-            debounceMs={700}
-            onDebouncedChange={handleDebouncedSearchChange}
-            isLoading={isBusy}
-          />
-
-          <DataTableFilters
-            filters={filterConfigs}
-            values={filterValuesForControls}
-            onFilterChange={handleFilterChange}
-            onClearAll={clearAllFilters}
-            isLoading={isBusy}
-          />
-
-          <div className="ml-auto flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Sort</span>
-            <Select
-              value={optimisticSortingState[0]?.id ? `${optimisticSortingState[0]?.id}:${optimisticSortingState[0]?.desc ? "desc" : "asc"}` : "default"}
-              onValueChange={(value) => {
-                if (value === "default") {
-                  handleSortingChange([])
-                  return
-                }
-
-                const [sortBy, sortOrder] = value.split(":")
-                handleSortingChange([{ id: sortBy, desc: sortOrder === "desc" }])
-              }}
-            >
-              <SelectTrigger className="w-55" disabled={isBusy}>
-                <SelectValue placeholder="Sort doctors" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">Default</SelectItem>
-                <SelectItem value="averageRating:desc">Rating (High to Low)</SelectItem>
-                <SelectItem value="appointmentFee:asc">Fee (Low to High)</SelectItem>
-                <SelectItem value="experience:desc">Experience (High to Low)</SelectItem>
-                <SelectItem value="createdAt:desc">Newest</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
+        <aside className="hidden lg:block">
+          <div className="sticky top-6 space-y-5 rounded-2xl border bg-card p-5 shadow-sm">
+            <ConsultationFilters
+              specialties={specialties}
+              filterValues={filterValues}
+              onFilterChange={handleFilterChange}
+              onClearAll={clearAllFilters}
+              isLoading={isBusy}
+            />
           </div>
+        </aside>
+
+        <div className="min-w-0 space-y-5">
+          <div className="space-y-3 rounded-2xl border bg-card p-4 shadow-sm">
+            <DataTableSearch
+              key={searchTermFromUrl}
+              initialValue={searchTermFromUrl}
+              placeholder="Search doctor by name, qualification, email..."
+              debounceMs={700}
+              onDebouncedChange={handleDebouncedSearchChange}
+              isLoading={isBusy}
+            />
+
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2">
+                <span className="hidden text-sm text-muted-foreground sm:inline">Sort</span>
+                <Select
+                  value={
+                    optimisticSortingState[0]?.id
+                      ? `${optimisticSortingState[0]?.id}:${optimisticSortingState[0]?.desc ? "desc" : "asc"}`
+                      : "default"
+                  }
+                  onValueChange={(value) => {
+                    if (value === "default") {
+                      handleSortingChange([])
+                      return
+                    }
+
+                    const [sortBy, sortOrder] = value.split(":")
+                    handleSortingChange([{ id: sortBy, desc: sortOrder === "desc" }])
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-52" disabled={isBusy}>
+                    <SelectValue placeholder="Sort doctors" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Default</SelectItem>
+                    <SelectItem value="averageRating:desc">Rating (High to Low)</SelectItem>
+                    <SelectItem value="appointmentFee:asc">Fee (Low to High)</SelectItem>
+                    <SelectItem value="experience:desc">Experience (High to Low)</SelectItem>
+                    <SelectItem value="createdAt:desc">Newest</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="lg:hidden"
+                onClick={() => setIsFiltersOpen(true)}
+              >
+                <SlidersHorizontal className="size-4" />
+                Filters
+                {totalActiveFilters > 0 && (
+                  <Badge variant="secondary" className="ml-0.5">
+                    {totalActiveFilters}
+                  </Badge>
+                )}
+              </Button>
+
+              {meta && (
+                <span className="ml-auto text-sm text-muted-foreground">
+                  {meta.total} doctor{meta.total === 1 ? "" : "s"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {isBusy && doctors.length === 0 ? (
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 6 }, (_, index) => (
+                <DoctorCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : doctors.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border bg-card px-6 py-16 text-center shadow-sm">
+              <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-muted">
+                <SearchX className="size-6 text-muted-foreground" />
+              </div>
+              <h3 className="text-base font-semibold">No doctors found</h3>
+              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                We couldn&apos;t find any doctors matching your current search or filters. Try
+                adjusting your criteria.
+              </p>
+              <Button type="button" variant="outline" className="mt-5" onClick={handleResetAll}>
+                Clear all filters
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {doctors.map((doctor: IDoctor) => (
+                  <DoctorCard
+                    key={String(doctor.id)}
+                    doctor={doctor}
+                    isAuthenticated={isAuthenticated}
+                    viewerRole={viewerRole}
+                  />
+                ))}
+              </div>
+
+              <div className="space-y-3 pt-1">
+                <Pagination
+                  currentPage={optimisticPaginationState.pageIndex + 1}
+                  totalPages={meta?.totalPages ?? 1}
+                  isLoading={isBusy}
+                  onPageChange={(page) => {
+                    handlePaginationChange({
+                      pageIndex: page - 1,
+                      pageSize: optimisticPaginationState.pageSize,
+                    })
+                  }}
+                />
+
+                <p className="text-center text-sm text-muted-foreground">
+                  Total {meta?.total ?? doctors.length} doctors
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {isBusy && (
-        <div className="rounded-md border p-4 text-sm text-muted-foreground">
-          Loading doctors...
-        </div>
-      )}
+      <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+        <SheetContent side="left" className="w-full gap-0 p-0 sm:max-w-md">
+          <SheetHeader className="border-b px-5 py-4">
+            <SheetTitle>Refine Results</SheetTitle>
+            <SheetDescription>
+              Narrow down doctors by specialty, gender and consultation fee.
+            </SheetDescription>
+          </SheetHeader>
 
-      {!isBusy && doctors.length === 0 && (
-        <div className="rounded-md border p-6 text-center text-sm text-muted-foreground">
-          No doctors found for your current search/filter.
-        </div>
-      )}
-
-      {!isBusy && doctors.length > 0 && (
-        <>
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {doctors.map((doctor: IDoctor) => {
-              const specialtiesList = doctor.specialties?.map((item) => item.specialty.title) ?? []
-
-              return (
-                <article
-                  key={String(doctor.id)}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className="pointer-events-none absolute left-0 top-0 h-1 w-full bg-linear-to-r from-cyan-500 via-sky-500 to-blue-500 opacity-80" />
-                  <div className="flex items-start gap-3">
-                    <Avatar className="size-14 ring-2 ring-blue-100">
-                      <AvatarImage src={doctor.profilePhoto} alt={doctor.name} />
-                      <AvatarFallback>{getDoctorInitials(doctor.name)}</AvatarFallback>
-                    </Avatar>
-
-                    <div className="min-w-0 space-y-1">
-                      <h3 className="truncate text-base font-semibold">{doctor.name}</h3>
-                      <p className="truncate text-xs text-muted-foreground">{doctor.designation || "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">{doctor.currentWorkingPlace || "N/A"}</p>
-                      <p className="truncate text-xs text-muted-foreground">{doctor.email || "N/A"}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-2 rounded-lg bg-muted/40 p-3 text-sm">
-                    <p>
-                      <span className="font-medium">Experience:</span> {doctor.experience ?? 0} years
-                    </p>
-                    <p>
-                      <span className="font-medium">Fee:</span> ${doctor.appointmentFee?.toFixed(2) ?? "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Rating:</span> {doctor.averageRating?.toFixed(1) ?? "0.0"}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {specialtiesList.length > 0 ? (
-                      specialtiesList.slice(0, 3).map((title) => (
-                        <Badge key={`${doctor.id}-${title}`} variant="secondary">
-                          {title}
-                        </Badge>
-                      ))
-                    ) : (
-                      <Badge variant="secondary">No specialties</Badge>
-                    )}
-                  </div>
-
-                  <div className="mt-auto grid gap-2 pt-5 sm:grid-cols-2">
-                    <BookAppointmentModal
-                      doctorId={String(doctor.id)}
-                      doctorName={doctor.name}
-                      isAuthenticated={isAuthenticated}
-                      viewerRole={viewerRole}
-                      triggerClassName="w-full"
-                      fullWidth
-                    />
-                    <Button asChild className="w-full">
-                      <Link href={`/consultation/doctor/${doctor.id}`}>
-                        View Details
-                      </Link>
-                    </Button>
-                  </div>
-                </article>
-              )
-            })}
-          </div>
-
-          <div className="space-y-3 pt-2">
-            <Pagination
-              currentPage={optimisticPaginationState.pageIndex + 1}
-              totalPages={meta?.totalPages ?? 1}
+          <div className="flex-1 overflow-y-auto px-5 py-5">
+            <ConsultationFilters
+              hideHeader
+              specialties={specialties}
+              filterValues={filterValues}
+              onFilterChange={handleFilterChange}
+              onClearAll={clearAllFilters}
               isLoading={isBusy}
-              onPageChange={(page) => {
-                handlePaginationChange({
-                  pageIndex: page - 1,
-                  pageSize: optimisticPaginationState.pageSize,
-                })
-              }}
             />
-
-            <p className="text-center text-sm text-muted-foreground">
-              Total {meta?.total ?? doctors.length} doctors
-            </p>
           </div>
-        </>
-      )}
+
+          <SheetFooter className="border-t px-5 py-4">
+            <Button type="button" className="w-full" onClick={() => setIsFiltersOpen(false)}>
+              Show {meta?.total ?? 0} doctor{meta?.total === 1 ? "" : "s"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </section>
   )
 }
