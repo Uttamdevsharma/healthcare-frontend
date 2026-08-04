@@ -5,9 +5,10 @@ import DateCell from "@/components/shared/cell/DateCell";
 import { Button } from "@/components/ui/button";
 import { getMyPrescriptions } from "@/services/prescription.services";
 import { IPrescription } from "@/types/prescription.types";
+import { downloadPrescription } from "@/utils/downloadPrescription";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
-import { ExternalLink, FileText, Stethoscope } from "lucide-react";
+import { FileText, Stethoscope } from "lucide-react";
 
 const patientPrescriptionsColumns: ColumnDef<IPrescription>[] = [
   {
@@ -56,12 +57,18 @@ const patientPrescriptionsColumns: ColumnDef<IPrescription>[] = [
       }
 
       return (
-        <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs">
-          <a href={pdfUrl} target="_blank" rel="noreferrer">
-            <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            Download Rx PDF
-            <ExternalLink className="h-3 w-3 opacity-60" />
-          </a>
+        <Button
+          variant="outline"
+          size="sm"
+          type="button"
+          className="gap-1.5 text-xs"
+          onClick={(e) => {
+            e.preventDefault();
+            downloadPrescription(row.original.id).catch(() => {});
+          }}
+        >
+          <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          Download Rx PDF
         </Button>
       );
     },

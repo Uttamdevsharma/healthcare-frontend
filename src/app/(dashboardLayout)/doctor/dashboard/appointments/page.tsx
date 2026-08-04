@@ -2,6 +2,8 @@ import DoctorAppointmentsTable from "@/components/modules/Doctor/DoctorAppointme
 import { getMyAppointments } from "@/services/appointment.services";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 
+export const dynamic = "force-dynamic"
+
 const DoctorAppointmentsPage = async () => {
   const queryClient = new QueryClient();
 

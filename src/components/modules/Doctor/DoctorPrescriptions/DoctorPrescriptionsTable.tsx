@@ -15,9 +15,10 @@ import DateCell from "@/components/shared/cell/DateCell";
 import { Button } from "@/components/ui/button";
 import { deletePrescription, getMyPrescriptions } from "@/services/prescription.services";
 import { IPrescription } from "@/types/prescription.types";
+import { downloadPrescription } from "@/utils/downloadPrescription";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
-import { ExternalLink, FileText, Pencil, Trash2, User } from "lucide-react";
+import { FileText, Pencil, Trash2, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import EditPrescriptionModal from "./EditPrescriptionModal";
@@ -72,12 +73,18 @@ const getDoctorPrescriptionsColumns = (
       }
 
       return (
-        <Button variant="ghost" size="sm" asChild className="gap-1 text-xs">
-          <a href={pdfUrl} target="_blank" rel="noreferrer">
-            <FileText className="h-3.5 w-3.5 text-primary" />
-            Download PDF
-            <ExternalLink className="h-3 w-3 opacity-60" />
-          </a>
+        <Button
+          variant="ghost"
+          size="sm"
+          type="button"
+          className="gap-1 text-xs"
+          onClick={(e) => {
+            e.preventDefault();
+            downloadPrescription(row.original.id).catch(() => {});
+          }}
+        >
+          <FileText className="h-3.5 w-3.5 text-primary" />
+          Download PDF
         </Button>
       );
     },
