@@ -1,7 +1,11 @@
 "use server";
 
 import { setTokenInCookies } from "@/lib/tokenUtils";
+import { jwtUtils } from "@/lib/jwtUtils";
+import { UserRole } from "@/lib/authUtils";
+import { UserInfo } from "@/types/user.types";
 import { cookies } from "next/headers";
+import { httpClient } from "@/lib/axios/httpClient";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -36,7 +40,7 @@ export async function getNewTokensWithRefreshToken(refreshToken  : string) : Pro
         }
 
         if(token){
-            await setTokenInCookies("better-auth.session_token", token, 24 * 60 * 60); // 1 day in seconds
+            await setTokenInCookies("better-auth.session_token", token, 24 * 60 * 60);
         }
 
         return true;
@@ -46,34 +50,50 @@ export async function getNewTokensWithRefreshToken(refreshToken  : string) : Pro
     }
 }
 
-export async function getUserInfo() {
+const getFallbackUserInfo = (accessToken: string): UserInfo | null => {
     try {
-        const cookieStore = await cookies();
-        const accessToken = cookieStore.get("accessToken")?.value;
-        const sessionToken = cookieStore.get("better-auth.session_token")?.value
+        const decoded = jwtUtils.decodedToken(accessToken);
 
-        if (!accessToken) {
+        if (!decoded || typeof decoded === "string") {
             return null;
         }
 
-        const res = await fetch(`${BASE_API_URL}/auth/me`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: `accessToken=${accessToken}; better-auth.session_token=${sessionToken}`
-            }
-        });
+        const { id, name, email, role, needPasswordChange, emailVerified, image } = decoded;
 
-        if (!res.ok) {
-            console.error("Failed to fetch user info:", res.status, res.statusText);
-            return null;
+        return {
+            id: (id as string) ?? "",
+            name: (name as string) ?? "",
+            email: (email as string) ?? "",
+            role: ((role as UserRole) ?? "PATIENT") as UserRole,
+            needPasswordChange,
+            emailVerified,
+            image: (image as string) ?? undefined,
+        };
+    } catch (error) {
+        console.error("Error decoding token in getUserInfo fallback:", error);
+        return null;
+    }
+}
+
+export async function getUserInfo(): Promise<UserInfo | null> {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("accessToken")?.value;
+
+    if (!accessToken) {
+        return null;
+    }
+
+    try {
+        const response = await httpClient.get<UserInfo>("/auth/me");
+
+        if (!response.success || !response.data) {
+            console.error("Failed to fetch user info:", response.message);
+            return getFallbackUserInfo(accessToken);
         }
 
-        const { data } = await res.json();
-
-        return data;
+        return response.data;
     } catch (error) {
         console.error("Error fetching user info:", error);
-        return null;
+        return getFallbackUserInfo(accessToken);
     }
 }

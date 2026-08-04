@@ -14,11 +14,7 @@ export const getAllSpecialties = async () => {
 
 export const createSpecialty = async (formData: FormData) => {
   try {
-    return await httpClient.post<ISpecialty>("/specialties", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    return await httpClient.post<ISpecialty>("/specialties", formData);
   } catch (error) {
     console.log("Error creating specialty:", error);
     throw error;

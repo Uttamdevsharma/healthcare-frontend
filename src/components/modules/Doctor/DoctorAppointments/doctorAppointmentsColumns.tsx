@@ -12,11 +12,11 @@ import {
 import { IAppointment } from "@/types/appointment.types";
 import { ColumnDef } from "@tanstack/react-table";
 import {
-  Calendar,
   CheckCircle2,
   ChevronDown,
   Circle,
   FilePlus,
+  HeartPulse,
   PlayCircle,
   User,
   Video,
@@ -27,6 +27,7 @@ export const getDoctorAppointmentsColumns = (
   onIssuePrescription: (appointment: IAppointment) => void,
   onStatusChange: (appointment: IAppointment, status: string) => void,
   isStatusUpdating: (appointmentId: string) => boolean,
+  onViewHealthRecords: (appointment: IAppointment) => void,
 ): ColumnDef<IAppointment>[] => [
   {
     id: "patient",
@@ -113,6 +114,16 @@ export const getDoctorAppointmentsColumns = (
               </a>
             </Button>
           )}
+
+          <Button
+            size="xs"
+            variant="outline"
+            className="gap-1 text-xs h-8"
+            onClick={() => onViewHealthRecords(appointment)}
+          >
+            <HeartPulse className="h-3.5 w-3.5 text-primary" />
+            Records
+          </Button>
 
           <Button
             size="xs"

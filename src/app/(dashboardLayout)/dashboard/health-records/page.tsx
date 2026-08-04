@@ -1,9 +1,12 @@
 "use client";
 
 import HealthRecordsForm from "@/components/modules/Patient/HealthRecords/HealthRecordsForm";
+import MedicalReportsList from "@/components/modules/Patient/HealthRecords/MedicalReportsList";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMyProfile } from "@/services/patientProfile.services";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FolderOpen } from "lucide-react";
 
 const HealthRecordsPage = () => {
   const { data: profileRes, isLoading } = useQuery({
@@ -28,7 +31,23 @@ const HealthRecordsPage = () => {
           <Skeleton className="h-32 w-full" />
         </div>
       ) : (
-        <HealthRecordsForm patient={patient} />
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 text-primary">
+                <FolderOpen className="h-5 w-5" /> My Uploaded Health Records
+                <span className="text-sm font-normal text-muted-foreground">
+                  ({patient?.medicalReports?.length ?? 0})
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <MedicalReportsList reports={patient?.medicalReports} />
+            </CardContent>
+          </Card>
+
+          <HealthRecordsForm patient={patient} />
+        </>
       )}
     </div>
   );

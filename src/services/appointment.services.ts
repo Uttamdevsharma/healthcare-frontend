@@ -7,6 +7,7 @@ import {
   type IBookAppointmentResult,
   type IInitiatePaymentResult,
 } from "@/types/appointment.types"
+import { type IPatient } from "@/types/patient.types"
 
 export const bookAppointment = async (payload: IBookAppointmentPayload) => {
   try {
@@ -73,6 +74,15 @@ export const getMySingleAppointment = async (appointmentId: string) => {
     return await httpClient.get<IAppointment>(`/appointments/my-single-appointment/${appointmentId}`)
   } catch (error) {
     console.log("Error fetching appointment details:", error)
+    throw error
+  }
+}
+
+export const getPatientHealthRecords = async (patientId: string) => {
+  try {
+    return await httpClient.get<IPatient>(`/appointments/patient-health-records/${patientId}`)
+  } catch (error) {
+    console.log("Error fetching patient health records:", error)
     throw error
   }
 }

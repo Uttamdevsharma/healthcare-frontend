@@ -57,11 +57,7 @@ export const updateDoctor = async (id: string, payload: IUpdateDoctorPayload) =>
 
 export const updateDoctorProfile = async (id: string, formData: FormData) => {
     try {
-        const response = await httpClient.patch<IDoctor>(`/doctors/${id}`, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-        });
+        const response = await httpClient.patch<IDoctor>(`/doctors/${id}`, formData);
         return response;
     } catch (error) {
         console.log("Error updating doctor profile:", error);

@@ -17,6 +17,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import IssuePrescriptionModal from "./IssuePrescriptionModal";
+import ViewHealthRecordsModal from "./ViewHealthRecordsModal";
 import { getDoctorAppointmentsColumns } from "./doctorAppointmentsColumns";
 
 const DoctorAppointmentsTable = () => {
@@ -24,6 +25,8 @@ const DoctorAppointmentsTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState<IAppointment | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [healthRecordsAppointment, setHealthRecordsAppointment] = useState<IAppointment | null>(null);
+  const [isHealthRecordsOpen, setIsHealthRecordsOpen] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -54,6 +57,11 @@ const DoctorAppointmentsTable = () => {
     setIsModalOpen(true);
   };
 
+  const handleViewHealthRecords = (appointment: IAppointment) => {
+    setHealthRecordsAppointment(appointment);
+    setIsHealthRecordsOpen(true);
+  };
+
   const handleStatusChange = (appointment: IAppointment, status: string) => {
     if (status === "CANCELED") {
       setAppointmentToCancel(appointment);
@@ -78,6 +86,7 @@ const DoctorAppointmentsTable = () => {
     handleIssuePrescription,
     handleStatusChange,
     (id) => updatingId === id,
+    handleViewHealthRecords,
   );
 
   return (
@@ -93,6 +102,12 @@ const DoctorAppointmentsTable = () => {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         appointment={selectedAppointment}
+      />
+
+      <ViewHealthRecordsModal
+        open={isHealthRecordsOpen}
+        onOpenChange={setIsHealthRecordsOpen}
+        appointment={healthRecordsAppointment}
       />
 
       <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>

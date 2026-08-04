@@ -14,7 +14,7 @@ import {
 import { updateMyPatientProfile } from "@/services/patientProfile.services";
 import { IPatient } from "@/types/patient.types";
 import { useQueryClient } from "@tanstack/react-query";
-import { Activity, FilePlus, Heart, Save } from "lucide-react";
+import { FilePlus, Heart, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -34,7 +34,6 @@ const HealthRecordsForm = ({ patient }: HealthRecordsFormProps) => {
     height: health?.height || "",
     weight: health?.weight || "",
     hasPastSurgeries: health?.hasPastSurgeries ? "true" : "false",
-    recentSurgeries: health?.recentSurgeries || "",
     smokingStatus: health?.smokingStatus ? "true" : "false",
     dietaryPreferences: health?.dietaryPreferences || "",
   });
@@ -45,20 +44,19 @@ const HealthRecordsForm = ({ patient }: HealthRecordsFormProps) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const payload = {
-        patientHealthData: {
-          gender: formData.gender,
-          dateOfBirth: formData.dateOfBirth ? `${formData.dateOfBirth}T00:00:00.000Z` : undefined,
-          bloodGroup: formData.bloodGroup,
-          height: formData.height,
-          weight: formData.weight,
-          hasPastSurgeries: formData.hasPastSurgeries === "true",
-          recentSurgeries: formData.recentSurgeries,
-          smokingStatus: formData.smokingStatus === "true",
-          dietaryPreferences: formData.dietaryPreferences,
-        },
-      };
+try {
+        const payload = {
+          patientHealthData: {
+            gender: formData.gender,
+            dateOfBirth: formData.dateOfBirth ? `${formData.dateOfBirth}T00:00:00.000Z` : undefined,
+            bloodGroup: formData.bloodGroup,
+            height: formData.height,
+            weight: formData.weight,
+            hasPastSurgeries: formData.hasPastSurgeries === "true",
+            smokingStatus: formData.smokingStatus === "true",
+            dietaryPreferences: formData.dietaryPreferences,
+          },
+        };
 
       const bodyFormData = new FormData();
       bodyFormData.append("data", JSON.stringify(payload));
@@ -177,16 +175,6 @@ const HealthRecordsForm = ({ patient }: HealthRecordsFormProps) => {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2 md:col-span-3">
-              <Label htmlFor="recentSurgeries">Past Surgeries / Medical History</Label>
-              <Input
-                id="recentSurgeries"
-                placeholder="Describe any past surgeries, chronic illnesses, or medical conditions..."
-                value={formData.recentSurgeries}
-                onChange={(e) => setFormData({ ...formData, recentSurgeries: e.target.value })}
-              />
-            </div>
           </CardContent>
         </Card>
 
@@ -208,24 +196,6 @@ const HealthRecordsForm = ({ patient }: HealthRecordsFormProps) => {
                 onChange={(e) => setReportFiles(e.target.files)}
               />
             </div>
-
-            {patient?.medicalReports && patient.medicalReports.length > 0 && (
-              <div className="pt-2">
-                <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-                  <Activity className="h-4 w-4 text-primary" /> Existing Medical Reports ({patient.medicalReports.length})
-                </h4>
-                <div className="grid gap-2 md:grid-cols-2">
-                  {patient.medicalReports.map((report) => (
-                    <div key={report.id} className="flex justify-between items-center p-3 rounded-lg border text-xs">
-                      <span className="font-medium truncate">{report.reportName}</span>
-                      <a href={report.reportLink} target="_blank" rel="noreferrer" className="text-primary underline shrink-0 ml-2">
-                        View Report
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
