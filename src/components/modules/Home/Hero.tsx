@@ -4,6 +4,7 @@ import {
   MessagesSquare,
   Building2,
   HeartPulse,
+  Info,
   Pill,
   FlaskConical,
 } from "lucide-react";
@@ -22,10 +23,11 @@ const fallbackSpecialties: ISpecialty[] = [
 const quickAccessItems = [
   { icon: CalendarCheck, label: "Book Appointment", href: "/consultation" },
   { icon: MessagesSquare, label: "Talk to Doctors", href: "/consultation" },
-  { icon: Building2, label: "Hospitals & Clinics", href: "/diagnostics" },
-  { icon: HeartPulse, label: "Healthcare", href: "/health-plans" },
-  { icon: Pill, label: "E-Pharmacy", href: "/medicine" },
-  { icon: FlaskConical, label: "Lab Testing", href: "/diagnostics" },
+  { icon: Building2, label: "Hospitals & Clinics", href: "/services" },
+  { icon: Info, label: "About", href: "/about" },
+  { icon: HeartPulse, label: "E-Pharmacy", href: "/services" },
+  { icon: HeartPulse, label: "Health Plans", href: "/services" },
+  { icon: FlaskConical, label: "Lab Testing", href: "/services" },
 ];
 
 export async function Hero() {

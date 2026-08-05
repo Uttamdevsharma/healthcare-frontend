@@ -36,19 +36,19 @@ function PublicFooter() {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="font-bold text-lg mb-6 text-foreground relative inline-block">
-              Quick Links
-              <span className="absolute -bottom-2 left-0 w-1/2 h-1 bg-secondary rounded-full"></span>
-            </h3>
-            <ul className="space-y-3 text-sm">
-              <li><Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-primary/50 mr-2"></span> Home</Link></li>
-              <li><Link href="/consultation" className="text-muted-foreground hover:text-primary transition-colors flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-primary/50 mr-2"></span> Consultation</Link></li>
-              <li><Link href="/health-plans" className="text-muted-foreground hover:text-primary transition-colors flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-primary/50 mr-2"></span> Health Plans</Link></li>
-              <li><Link href="/medicine" className="text-muted-foreground hover:text-primary transition-colors flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-primary/50 mr-2"></span> Medicine</Link></li>
-            </ul>
-          </div>
+            {/* Quick Links */}
+           <div>
+             <h3 className="font-bold text-lg mb-6 text-foreground relative inline-block">
+               Quick Links
+               <span className="absolute -bottom-2 left-0 w-1/2 h-1 bg-secondary rounded-full"></span>
+             </h3>
+             <ul className="space-y-3 text-sm">
+               <li><Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-primary/50 mr-2"></span> Home</Link></li>
+               <li><Link href="/consultation" className="text-muted-foreground hover:text-primary transition-colors flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-primary/50 mr-2"></span> Consultation</Link></li>
+               <li><Link href="/about" className="text-muted-foreground hover:text-primary transition-colors flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-primary/50 mr-2"></span> About</Link></li>
+               <li><Link href="/services" className="text-muted-foreground hover:text-primary transition-colors flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-primary/50 mr-2"></span> Services</Link></li>
+             </ul>
+           </div>
 
           {/* Support */}
           <div>

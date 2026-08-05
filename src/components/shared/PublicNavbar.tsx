@@ -12,9 +12,8 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/consultation", label: "Consultation" },
-  { href: "/health-plans", label: "Health Plans" },
-  { href: "/medicine", label: "Medicine" },
-  { href: "/diagnostics", label: "Diagnostics" },
+  { href: "/services", label: "Services" },
+  { href: "/about", label: "About" },
 ];
 
 const BrandLogo = ({ compact = false }: { compact?: boolean }) => (
