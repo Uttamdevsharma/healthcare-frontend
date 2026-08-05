@@ -1,9 +1,6 @@
 allowBuilds:
-  msw: set this to true or false
-  sharp: set this to true or false
-  unrs-resolver: set this to true or false
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+  msw: false
+  sharp: true
+  unrs-resolver: true
 minimumReleaseAgeExclude:
   - '@hookform/resolvers@5.7.1'

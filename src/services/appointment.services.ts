@@ -6,6 +6,7 @@ import {
   type IBookAppointmentPayload,
   type IBookAppointmentResult,
   type IInitiatePaymentResult,
+  type IVideoCallToken,
 } from "@/types/appointment.types"
 import { type IPatient } from "@/types/patient.types"
 
@@ -101,6 +102,15 @@ export const getAppointmentByVideoCallId = async (videoCallingId: string) => {
     return await httpClient.get<IAppointment>(`/appointments/by-video-call-id/${videoCallingId}`)
   } catch (error) {
     console.log("Error fetching appointment for video call:", error)
+    throw error
+  }
+}
+
+export const getVideoCallToken = async (videoCallingId: string) => {
+  try {
+    return await httpClient.get<IVideoCallToken>(`/appointments/video-call-token/${videoCallingId}`)
+  } catch (error) {
+    console.log("Error fetching video call token:", error)
     throw error
   }
 }

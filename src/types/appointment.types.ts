@@ -73,3 +73,11 @@ export interface IBookAppointmentResult {
 export interface IInitiatePaymentResult {
   paymentUrl: string
 }
+
+export interface IVideoCallToken {
+  url: string
+  token: string
+  identity: string
+  name: string
+  role: "PATIENT" | "DOCTOR" | "ADMIN" | "SUPER_ADMIN" | string
+}

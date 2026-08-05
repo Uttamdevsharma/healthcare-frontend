@@ -10,7 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { getAppointmentByVideoCallId } from "@/services/appointment.services"
+import {
+  getAppointmentByVideoCallId,
+  getVideoCallToken,
+} from "@/services/appointment.services"
 import { useQuery } from "@tanstack/react-query"
 import {
   CalendarClock,
@@ -23,8 +26,18 @@ import {
   Video,
   VideoOff,
 } from "lucide-react"
+import {
+  Room,
+  RoomEvent,
+  Track,
+  type LocalTrackPublication,
+  type RemoteParticipant,
+  type RemoteTrack,
+  type RemoteTrackPublication,
+  type TrackPublication,
+} from "livekit-client"
 import Link from "next/link"
-import { useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface VideoCallRoomProps {
@@ -60,9 +73,21 @@ const formatDateTime = (value?: string | Date | null) => {
   })
 }
 
+type ConnectionState = "idle" | "connecting" | "connected" | "disconnected"
+
 const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
   const [isMuted, setIsMuted] = useState(false)
   const [isCameraOff, setIsCameraOff] = useState(false)
+  const [connectionState, setConnectionState] = useState<ConnectionState>("idle")
+  const [connectError, setConnectError] = useState<string | null>(null)
+  const [remoteParticipant, setRemoteParticipant] = useState<RemoteParticipant | null>(null)
+  const [remoteCameraPub, setRemoteCameraPub] = useState<RemoteTrackPublication | null>(null)
+  const [remoteCamEnabled, setRemoteCamEnabled] = useState(false)
+  const [localCamActive, setLocalCamActive] = useState(false)
+
+  const roomRef = useRef<Room | null>(null)
+  const localVideoRef = useRef<HTMLVideoElement | null>(null)
+  const remoteVideoRef = useRef<HTMLVideoElement | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["video-call", videoCallingId],
@@ -71,8 +96,18 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
     staleTime: 1000 * 60 * 5,
   })
 
+  const tokenQuery = useQuery({
+    queryKey: ["video-call-token", videoCallingId],
+    queryFn: () => getVideoCallToken(videoCallingId),
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  })
+
   const hasError = data && !data.success
   const appointment = data && data.success ? data.data : null
+  const tokenData = tokenQuery.data && tokenQuery.data.success ? tokenQuery.data.data : null
+  const tokenFailed =
+    tokenQuery.isError || (tokenQuery.data !== undefined && !tokenQuery.data.success)
 
   const otherPartyName = appointment?.doctor
     ? appointment.doctor.name || "Doctor"
@@ -80,6 +115,169 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
   const doctorName = appointment?.doctor?.name
     ? `Dr. ${appointment.doctor.name}`
     : appointment?.patient?.name || "Video Consultation"
+  const otherPartyPhoto = appointment?.doctor?.profilePhoto
+
+  const isBusy = connectionState === "connecting"
+  const isJoined = connectionState === "connected"
+  const canJoinAppointment =
+    appointment?.status === "SCHEDULED" || appointment?.status === "INPROGRESS"
+  const canJoin = (connectionState === "idle" || connectionState === "disconnected") && canJoinAppointment
+
+  const leavePath =
+    tokenData?.role === "DOCTOR"
+      ? "/doctor/dashboard/appointments"
+      : "/dashboard/my-appointments"
+
+  // Attach the local camera track to the local preview whenever it changes.
+  useEffect(() => {
+    const el = localVideoRef.current
+    const room = roomRef.current
+    if (!el || !room || connectionState !== "connected") return
+
+    const publication = room.localParticipant.getTrackPublication(Track.Source.Camera)
+    const track = publication?.track
+
+    if (track && !isCameraOff && localCamActive) {
+      track.attach(el)
+    } else {
+      el.srcObject = null
+    }
+  }, [connectionState, isCameraOff, localCamActive])
+
+  // Attach the remote camera track to the remote video whenever it changes.
+  useEffect(() => {
+    const el = remoteVideoRef.current
+    if (!el || connectionState !== "connected") return
+
+    const track = remoteCameraPub?.track
+
+    if (track && remoteCamEnabled) {
+      track.attach(el)
+    } else {
+      el.srcObject = null
+    }
+  }, [connectionState, remoteCameraPub, remoteCamEnabled])
+
+  // Cleanup the LiveKit connection when the room unmounts.
+  useEffect(() => {
+    return () => {
+      roomRef.current?.disconnect()
+      roomRef.current = null
+    }
+  }, [])
+
+  const joinCall = useCallback(async () => {
+    if (!tokenData || isBusy || isJoined) return
+
+    setConnectError(null)
+    setConnectionState("connecting")
+
+    const room = new Room({ adaptiveStream: true, dynacast: true })
+    roomRef.current = room
+
+    room
+      .on(
+        RoomEvent.TrackSubscribed,
+        (track: RemoteTrack, publication: RemoteTrackPublication) => {
+          if (publication.source === Track.Source.Camera) {
+            setRemoteCameraPub(publication)
+            setRemoteCamEnabled(!publication.isMuted)
+          }
+        },
+      )
+      .on(
+        RoomEvent.TrackUnsubscribed,
+        (track: Track, publication: TrackPublication) => {
+          if (publication.source === Track.Source.Camera) {
+            setRemoteCameraPub(null)
+            setRemoteCamEnabled(false)
+          }
+        },
+      )
+      .on(RoomEvent.ParticipantConnected, (participant: RemoteParticipant) => {
+        setRemoteParticipant(participant)
+      })
+      .on(RoomEvent.ParticipantDisconnected, () => {
+        setRemoteParticipant(null)
+        setRemoteCameraPub(null)
+        setRemoteCamEnabled(false)
+      })
+      .on(RoomEvent.TrackMuted, (publication: TrackPublication) => {
+        if (publication.source === Track.Source.Camera && !publication.isLocal) {
+          setRemoteCamEnabled(false)
+        }
+      })
+      .on(RoomEvent.TrackUnmuted, (publication: TrackPublication) => {
+        if (publication.source === Track.Source.Camera && !publication.isLocal) {
+          setRemoteCamEnabled(true)
+        }
+      })
+      .on(RoomEvent.LocalTrackPublished, (publication: LocalTrackPublication) => {
+        if (publication.source === Track.Source.Camera) {
+          setLocalCamActive(true)
+        }
+      })
+      .on(RoomEvent.LocalTrackUnpublished, (publication: LocalTrackPublication) => {
+        if (publication.source === Track.Source.Camera) {
+          setLocalCamActive(false)
+        }
+      })
+      .on(RoomEvent.Disconnected, () => {
+        setConnectionState("disconnected")
+        setRemoteParticipant(null)
+        setRemoteCameraPub(null)
+        setRemoteCamEnabled(false)
+        setLocalCamActive(false)
+      })
+
+    try {
+      await room.connect(tokenData.url, tokenData.token, { autoSubscribe: true })
+      setConnectionState("connected")
+
+      await room.localParticipant.setCameraEnabled(true).catch(() => {
+        setIsCameraOff(true)
+      })
+      await room.localParticipant.setMicrophoneEnabled(true).catch(() => {
+        setIsMuted(true)
+      })
+    } catch (error) {
+      console.error("Failed to join the LiveKit consultation room:", error)
+      setConnectError(
+        "Unable to join the consultation. Check your camera and microphone permissions, then try again.",
+      )
+      setConnectionState("disconnected")
+      room.disconnect()
+      roomRef.current = null
+    }
+  }, [tokenData, isBusy, isJoined])
+
+  const toggleMute = () => {
+    const room = roomRef.current
+    if (!room || connectionState !== "connected") return
+
+    const next = !isMuted
+    setIsMuted(next)
+    room.localParticipant.setMicrophoneEnabled(!next).catch(() => {
+      setIsMuted(!next)
+    })
+  }
+
+  const toggleCamera = () => {
+    const room = roomRef.current
+    if (!room || connectionState !== "connected") return
+
+    const next = !isCameraOff
+    setIsCameraOff(next)
+    room.localParticipant.setCameraEnabled(!next).catch(() => {
+      setIsCameraOff(!next)
+    })
+  }
+
+  const leaveCall = useCallback(() => {
+    roomRef.current?.disconnect()
+    roomRef.current = null
+    window.location.href = leavePath
+  }, [leavePath])
 
   const getConnectionState = () => {
     if (isLoading) {
@@ -103,13 +301,42 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
       }
     }
 
+    if (appointment?.status === "COMPLETED") {
+      return {
+        label: "This consultation has been completed.",
+        tone: "text-muted-foreground",
+      }
+    }
+
+    if (tokenFailed || connectError) {
+      return {
+        label: connectError ?? "Unable to join this consultation. The link may be invalid or expired.",
+        tone: "text-destructive",
+      }
+    }
+
+    if (isBusy) {
+      return {
+        label: "Connecting to the secure video server...",
+        tone: "text-muted-foreground",
+      }
+    }
+
+    if (isJoined) {
+      return {
+        label: "You are connected. The consultation is live.",
+        tone: "text-emerald-600 dark:text-emerald-400",
+      }
+    }
+
     return {
-      label: "You are connected. Video will start shortly.",
-      tone: "text-emerald-600 dark:text-emerald-400",
+      label: "Ready to join. Click Join Consultation to start the video call.",
+      tone: "text-muted-foreground",
     }
   }
 
   const connection = getConnectionState()
+  const remoteVideoVisible = isJoined && remoteCameraPub?.track != null && remoteCamEnabled
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-white">
@@ -158,11 +385,67 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
           <>
             {/* Participant tile */}
             <div className="relative flex aspect-video w-full max-w-3xl items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950">
-              {!isCameraOff ? (
+              {isJoined ? (
+                <>
+                  {remoteVideoVisible && (
+                    <video
+                      ref={remoteVideoRef}
+                      autoPlay
+                      playsInline
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  )}
+
+                  {!remoteVideoVisible && (
+                    <div className="flex flex-col items-center gap-4 p-8 text-center">
+                      <Avatar className="size-28 ring-4 ring-primary/30">
+                        <AvatarImage
+                          src={otherPartyPhoto}
+                          alt={otherPartyName}
+                        />
+                        <AvatarFallback className="bg-primary/20 text-3xl font-bold text-primary">
+                          {getInitials(otherPartyName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-xl font-semibold">{otherPartyName}</p>
+                        <p className="text-sm text-white/50">{doctorName}</p>
+                      </div>
+                      {remoteParticipant && !remoteCamEnabled ? (
+                        <p className="flex items-center gap-1.5 text-sm text-white/50">
+                          <VideoOff className="size-4" />
+                          Camera is off
+                        </p>
+                      ) : (
+                        <p className="text-sm text-white/50">
+                          Waiting for the other participant to join...
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Local video */}
+                  <div className="absolute bottom-3 left-3 flex h-28 w-40 items-center justify-center overflow-hidden rounded-xl border border-white/20 bg-black/60">
+                    <video
+                      ref={localVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="h-full w-full object-cover"
+                    />
+                    {(!localCamActive || isCameraOff) && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/50 text-white/60">
+                        <VideoOff className="size-5" />
+                        <span className="text-[10px]">Camera off</span>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
                 <div className="flex flex-col items-center gap-4 p-8 text-center">
                   <Avatar className="size-28 ring-4 ring-primary/30">
                     <AvatarImage
-                      src={appointment.doctor?.profilePhoto}
+                      src={otherPartyPhoto}
                       alt={otherPartyName}
                     />
                     <AvatarFallback className="bg-primary/20 text-3xl font-bold text-primary">
@@ -174,11 +457,7 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
                     <p className="text-sm text-white/50">{doctorName}</p>
                   </div>
                   <p className={cn("text-sm", connection.tone)}>{connection.label}</p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-3 text-white/60">
-                  <VideoOff className="size-12" />
-                  <p className="text-sm">Camera is off</p>
+                  {isBusy && <Loader2 className="size-8 animate-spin text-white/60" />}
                 </div>
               )}
 
@@ -194,40 +473,65 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
 
             {/* Controls */}
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsMuted((value) => !value)}
-                className={cn(
-                  "flex size-12 items-center justify-center rounded-full transition-colors",
-                  isMuted ? "bg-white/20 text-white" : "bg-white/10 text-white hover:bg-white/20",
-                )}
-                aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
-              >
-                {isMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
-              </button>
+              {canJoin && (
+                <Button
+                  size="lg"
+                  className="gap-2"
+                  onClick={joinCall}
+                  disabled={tokenQuery.isLoading || tokenFailed || !tokenData}
+                >
+                  {tokenQuery.isLoading ? (
+                    <Loader2 className="size-5 animate-spin" />
+                  ) : (
+                    <Video className="size-5" />
+                  )}
+                  {tokenQuery.isLoading ? "Preparing room..." : "Join Consultation"}
+                </Button>
+              )}
 
-              <button
-                type="button"
-                onClick={() => setIsCameraOff((value) => !value)}
-                className={cn(
-                  "flex size-12 items-center justify-center rounded-full transition-colors",
-                  isCameraOff ? "bg-white/20 text-white" : "bg-white/10 text-white hover:bg-white/20",
-                )}
-                aria-label={isCameraOff ? "Turn camera on" : "Turn camera off"}
-              >
-                {isCameraOff ? <VideoOff className="size-5" /> : <Video className="size-5" />}
-              </button>
+              {isBusy && (
+                <Button size="lg" className="gap-2" disabled>
+                  <Loader2 className="size-5 animate-spin" />
+                  Connecting...
+                </Button>
+              )}
 
-              <Button
-                asChild
-                size="lg"
-                className="size-14 rounded-full bg-red-500 p-0 hover:bg-red-600"
-                aria-label="Leave call"
-              >
-                <Link href="/dashboard/my-appointments">
-                  <PhoneOff className="size-6" />
-                </Link>
-              </Button>
+              {isJoined && (
+                <>
+                  <button
+                    type="button"
+                    onClick={toggleMute}
+                    className={cn(
+                      "flex size-12 items-center justify-center rounded-full transition-colors",
+                      isMuted ? "bg-white/20 text-white" : "bg-white/10 text-white hover:bg-white/20",
+                    )}
+                    aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
+                  >
+                    {isMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={toggleCamera}
+                    className={cn(
+                      "flex size-12 items-center justify-center rounded-full transition-colors",
+                      isCameraOff ? "bg-white/20 text-white" : "bg-white/10 text-white hover:bg-white/20",
+                    )}
+                    aria-label={isCameraOff ? "Turn camera on" : "Turn camera off"}
+                  >
+                    {isCameraOff ? <VideoOff className="size-5" /> : <Video className="size-5" />}
+                  </button>
+
+                  <Button
+                    size="lg"
+                    className="size-14 rounded-full bg-red-500 p-0 hover:bg-red-600"
+                    aria-label="Leave call"
+                    onClick={leaveCall}
+                  >
+                    <PhoneOff className="size-6" />
+                  </Button>
+                </>
+              )}
             </div>
 
             <p className="text-center text-xs text-white/40">
@@ -241,7 +545,7 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
       <footer className="border-t border-white/10 px-4 py-3 text-center text-xs text-white/40">
         <p className="flex items-center justify-center gap-1.5">
           <MonitorUp className="size-3.5" />
-          This is a simulated video consultation room. Connect your camera and microphone to begin.
+          Secure video consultation powered by LiveKit.
         </p>
       </footer>
     </div>
