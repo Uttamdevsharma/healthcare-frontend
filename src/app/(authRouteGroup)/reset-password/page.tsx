@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { resetPasswordAction } from "../reset-password/_action";
 import AppField from "@/components/shared/form/AppField";
@@ -13,7 +14,19 @@ import Link from "next/link";
 import { useState } from "react";
 
 const ResetPasswordPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordPageContent />
+    </Suspense>
+  );
+};
+
+const ResetPasswordPageContent = () => {
   const searchParams = useSearchParams();
+
+  if (!searchParams) {
+    return <div>Loading...</div>;
+  }
   const email = searchParams.get("email") || "";
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);

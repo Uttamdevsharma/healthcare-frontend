@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { verifyEmailAction } from "../verify-email/_action";
 import AppField from "@/components/shared/form/AppField";
@@ -13,6 +14,14 @@ import Link from "next/link";
 import { useState } from "react";
 
 const VerifyEmailPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyEmailPageContent />
+    </Suspense>
+  );
+};
+
+const VerifyEmailPageContent = () => {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
   const [serverError, setServerError] = useState<string | null>(null);
