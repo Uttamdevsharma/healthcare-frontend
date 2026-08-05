@@ -23,6 +23,11 @@ const VerifyEmailPage = () => {
 
 const VerifyEmailPageContent = () => {
   const searchParams = useSearchParams();
+
+  if (!searchParams) {
+    return <div>Loading...</div>;
+  }
+
   const email = searchParams.get("email") || "";
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
