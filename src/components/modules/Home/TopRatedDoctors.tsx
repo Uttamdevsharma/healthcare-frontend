@@ -46,7 +46,7 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
   const doctorProfileHref = `/consultation/doctor/${doctor.id}`;
 
   return (
-    <Card className="group relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-0 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-primary/10">
+    <Card className="group relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border border-border/10 bg-card p-0 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-primary/10">
       <div className="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-muted/40">
         <div className="size-full overflow-hidden scale-[1.12]">
           <Avatar className="size-full rounded-none">
@@ -117,7 +117,7 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
         )}
       </CardContent>
 
-      <CardFooter className="mt-auto items-center justify-between gap-3 border-t border-border/60 px-5 py-4">
+      <CardFooter className="mt-auto items-center justify-between gap-3 border-t border-border/10 px-5 py-4">
         <div className="min-w-0">
           <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             Consultation Fees
@@ -132,7 +132,7 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
             asChild
             variant="outline"
             size="sm"
-            className="rounded-full font-medium"
+            className="rounded-full border border-primary/40 bg-transparent px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition-all duration-200 hover:border-primary/60 hover:bg-primary/5 hover:shadow-md active:scale-[0.98]"
           >
             <Link href={doctorProfileHref}>View Profile</Link>
           </Button>
@@ -140,7 +140,7 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
           <Button
             asChild
             size="icon"
-            className="size-10 rounded-full shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"
+            className="size-11 rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all duration-200 hover:bg-primary-dark hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98]"
             aria-label="Book Now"
             title="Book Now"
           >

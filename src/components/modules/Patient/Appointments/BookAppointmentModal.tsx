@@ -126,7 +126,7 @@ const BookAppointmentModal = ({
       <DialogTrigger asChild>
         <Button type="button" className={triggerClassName} variant="outline">
           <CalendarPlus className="size-4" />
-          Book Appointment
+          Book Now
         </Button>
       </DialogTrigger>
 

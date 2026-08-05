@@ -222,10 +222,10 @@ const DoctorCard = ({
             doctorName={doctor.name}
             isAuthenticated={isAuthenticated}
             viewerRole={viewerRole}
-            triggerClassName="w-full"
+            triggerClassName="w-full h-11 rounded-lg border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary-dark hover:shadow-md active:scale-[0.98] cursor-pointer"
             fullWidth
           />
-          <Button asChild variant="outline" className="w-full">
+          <Button asChild variant="outline" className="w-full h-11 rounded-lg border border-primary bg-transparent px-4 py-2.5 text-sm font-medium text-primary shadow-sm transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary-dark focus:bg-primary focus:text-primary-foreground focus:border-primary-dark active:scale-[0.98] cursor-pointer">
             <Link href={`/consultation/doctor/${doctor.id}`}>View Profile</Link>
           </Button>
         </div>
