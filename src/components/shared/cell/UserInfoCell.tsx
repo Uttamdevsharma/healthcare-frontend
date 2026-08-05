@@ -1,4 +1,8 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getProfileImageSrc, getProfilePhotoVersion, subscribeProfilePhotoVersion } from "@/lib/profileImage";
+import { useSyncExternalStore } from "react";
 
 interface UserInfoCellProps {
     name : string;
@@ -8,6 +12,7 @@ interface UserInfoCellProps {
 
 
 const UserInfoCell = ({ name, email, profilePhoto }: UserInfoCellProps) => {
+    const photoVersion = useSyncExternalStore(subscribeProfilePhotoVersion, getProfilePhotoVersion);
     const initials = name
         .split(" ")
         .map((part) => part.charAt(0).toUpperCase())
@@ -18,7 +23,7 @@ const UserInfoCell = ({ name, email, profilePhoto }: UserInfoCellProps) => {
   return (
     <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10">
-            <AvatarImage src={profilePhoto || undefined} alt={name} />
+            <AvatarImage src={getProfileImageSrc(profilePhoto, photoVersion) || undefined} alt={name} />
             <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
 

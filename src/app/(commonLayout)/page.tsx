@@ -7,9 +7,20 @@ import ConsultationFeatures from "@/components/modules/Home/ConsultationFeatures
 import TrustIndicators from "@/components/modules/Home/TrustIndicators";
 import Comparison from "@/components/modules/Home/Comparison";
 import JoinProviders from "@/components/modules/Home/JoinProviders";
+import { getTopRatedDoctors } from "@/services/doctor.services";
+import { type IDoctor } from "@/types/doctor.types";
 import Head from "next/head";
 
-export default function Home() {
+export default async function Home() {
+  let topRatedDoctors: IDoctor[] = [];
+
+  try {
+    const response = await getTopRatedDoctors();
+    topRatedDoctors = response.data ?? [];
+  } catch (error) {
+    console.error("Error fetching top rated doctors:", error);
+  }
+
   return (
     <>
       <Head>
@@ -24,7 +35,7 @@ export default function Home() {
       <main>
         <Hero />
         <Specialities />
-        <TopRatedDoctors />
+        <TopRatedDoctors initialDoctors={topRatedDoctors} />
         <TrustIndicators />
         <Steps />
         <ConsultationFeatures />

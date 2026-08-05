@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Star,
   ArrowRight,
@@ -18,6 +20,13 @@ import { Badge } from "@/components/ui/badge";
 import { UserStatus, type IDoctor } from "@/types/doctor.types";
 import Link from "next/link";
 import { getTopRatedDoctors } from "@/services/doctor.services";
+import {
+  getProfileImageSrc,
+  getProfilePhotoVersion,
+  subscribeProfilePhotoVersion,
+} from "@/lib/profileImage";
+import { useQuery } from "@tanstack/react-query";
+import { useSyncExternalStore } from "react";
 import DoctorWishlistButton from "./DoctorWishlistButton";
 
 const getDoctorSpecialty = (doctor: IDoctor) => {
@@ -26,6 +35,7 @@ const getDoctorSpecialty = (doctor: IDoctor) => {
 };
 
 const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
+  const photoVersion = useSyncExternalStore(subscribeProfilePhotoVersion, getProfilePhotoVersion);
   const reviewCount = doctor._count?.reviews ?? 0;
   const rating = doctor.averageRating > 0 ? doctor.averageRating.toFixed(1) : "0.0";
   const specialty = getDoctorSpecialty(doctor);
@@ -37,21 +47,28 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
   return (
     <Card className="group relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-0 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-primary/10">
       {/* Image Header */}
-       <div className="relative h-56 overflow-hidden rounded-t-2xl bg-muted/60 sm:h-64">
-         <Avatar className="size-full rounded-none">
-           <AvatarImage
-             src={doctor.profilePhoto}
-             alt={doctor.name}
-             className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-           />
+      <div className="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-muted/40">
+        <div className="size-full overflow-hidden scale-[1.12]">
+          <Avatar className="size-full rounded-none">
+            <AvatarImage
+              src={getProfileImageSrc(doctor.profilePhoto, photoVersion)}
+              alt={doctor.name}
+              className="size-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
+            />
           <AvatarFallback className="rounded-none bg-transparent">
-            <UserRound className="size-20 text-muted-foreground/30" />
+            <div className="flex size-full items-center justify-center">
+              <UserRound className="size-20 text-muted-foreground/30" />
+            </div>
           </AvatarFallback>
         </Avatar>
+        </div>
+
+        {/* Subtle bottom fade for visual depth */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/15 to-transparent" />
 
         {/* Rating Badge */}
-        <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-orange-500 px-2.5 py-1 text-xs font-bold text-white shadow-md shadow-black/10">
-          <Star className="size-3.5 fill-white text-white" />
+        <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-amber-500 shadow-md shadow-black/10 backdrop-blur">
+          <Star className="size-3.5 fill-amber-500 text-amber-500" />
           {rating}
         </div>
 
@@ -142,15 +159,22 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
   );
 };
 
-const TopRatedDoctors = async () => {
-  let doctors: IDoctor[] = [];
+interface TopRatedDoctorsProps {
+  initialDoctors?: IDoctor[];
+}
 
-  try {
-    const response = await getTopRatedDoctors();
-    doctors = response.data ?? [];
-  } catch (error) {
-    console.error("Error fetching top rated doctors:", error);
-  }
+const TopRatedDoctors = ({ initialDoctors = [] }: TopRatedDoctorsProps) => {
+  const { data: doctorsResponse } = useQuery({
+    queryKey: ["top-rated-doctors"],
+    queryFn: () => getTopRatedDoctors(),
+    initialData: {
+      success: true,
+      message: "",
+      data: initialDoctors,
+    },
+  });
+
+  const doctors = doctorsResponse?.data ?? [];
 
   if (doctors.length === 0) {
     return null;
@@ -164,16 +188,11 @@ const TopRatedDoctors = async () => {
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-3">
-          <Badge variant="outline" className="px-3 py-1 text-xs uppercase tracking-wider text-primary border-primary/30">
-            Qualified Healthcare Professionals
-          </Badge>
-          
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-foreground">
             Meet Our Top Rated Doctors
           </h2>
-          
-          <p className="text-muted-foreground text-base leading-relaxed">
+          <p className="text-muted-foreground max-w-2xl mx-auto mt-4">
             Access to experienced medical experts from various specialties, ready to provide you with personalized and top-notch medical care.
           </p>
         </div>

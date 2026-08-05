@@ -5,6 +5,8 @@ import { getMyAppointments } from "@/services/appointment.services";
 import { getMyPrescriptions } from "@/services/prescription.services";
 import { getMyReviews } from "@/services/review.services";
 import { getMyProfileAction } from "@/services/profile.services";
+import { getDoctorById } from "@/services/doctor.services";
+import { type IDoctorDetails } from "@/types/doctor.types";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, FileText, Star, User, Video } from "lucide-react";
 import Link from "next/link";
@@ -25,10 +27,25 @@ interface IProfileData {
     role: string;
     status: string;
     email: string;
+    name?: string;
+    profilePhoto?: string;
   };
   doctor?: {
     id: string;
     userId: string;
+    name?: string;
+    email?: string;
+    profilePhoto?: string;
+    contactNumber?: string;
+    address?: string;
+    designation?: string;
+    qualification?: string;
+    registrationNumber?: string;
+    experience?: number;
+    appointmentFee?: number;
+    gender?: string;
+    currentWorkingPlace?: string;
+    specialties?: { specialty: { title: string } }[];
   };
   designation?: string;
   qualification?: string;
@@ -67,6 +84,31 @@ const DoctorDashboardContent = () => {
   const reviews = reviewsRes?.data ?? [];
   const profile = profileRes?.data ?? null;
 
+  const profileDoctor = (profile?.doctor ?? {}) as NonNullable<IProfileData["doctor"]>;
+  const doctorId = profileDoctor?.id ?? "";
+
+  const { data: doctorDetailsRes } = useQuery({
+    queryKey: ["doctor", doctorId],
+    queryFn: () => getDoctorById(doctorId),
+    enabled: Boolean(doctorId),
+  });
+
+  const doctorDetails = doctorDetailsRes?.data ?? (null as IDoctorDetails | null);
+
+  const profileInitialData = {
+    name: doctorDetails?.name ?? profile?.name ?? profileDoctor.name ?? "",
+    contactNumber: doctorDetails?.contactNumber ?? profile?.contactNumber ?? profileDoctor.contactNumber,
+    address: doctorDetails?.address ?? profile?.address ?? profileDoctor.address,
+    registrationNumber: doctorDetails?.registrationNumber ?? profile?.registrationNumber ?? profileDoctor.registrationNumber ?? "",
+    experience: doctorDetails?.experience ?? profile?.experience ?? profileDoctor.experience,
+    gender: (doctorDetails?.gender ?? profile?.gender ?? profileDoctor.gender) as "MALE" | "FEMALE" | undefined,
+    appointmentFee: doctorDetails?.appointmentFee ?? profile?.appointmentFee ?? profileDoctor.appointmentFee,
+    qualification: doctorDetails?.qualification ?? profile?.qualification ?? profileDoctor.qualification ?? "",
+    currentWorkingPlace: doctorDetails?.currentWorkingPlace ?? profile?.currentWorkingPlace ?? profileDoctor.currentWorkingPlace ?? "",
+    designation: doctorDetails?.designation ?? profile?.designation ?? profileDoctor.designation ?? "",
+    profilePhoto: doctorDetails?.profilePhoto ?? profile?.profilePhoto ?? profileDoctor.profilePhoto,
+  };
+
   const upcomingAppointments = appointments.filter(
     (a) => a.status === "SCHEDULED" || a.status === "INPROGRESS"
   );
@@ -87,19 +129,7 @@ const DoctorDashboardContent = () => {
         {profile && profile.doctor && (
           <DoctorProfileEditModal
             doctorId={profile.doctor?.id}
-            initialData={{
-              name: profile.name,
-              contactNumber: profile.contactNumber,
-              address: profile.address,
-              registrationNumber: profile.registrationNumber || "",
-              experience: profile.experience,
-              gender: profile.gender as "MALE" | "FEMALE" | undefined,
-              appointmentFee: profile.appointmentFee,
-              qualification: profile.qualification || "",
-              currentWorkingPlace: profile.currentWorkingPlace || "",
-              designation: profile.designation || "",
-              profilePhoto: profile.profilePhoto,
-            }}
+            initialData={profileInitialData}
           />
         )}
       </div>

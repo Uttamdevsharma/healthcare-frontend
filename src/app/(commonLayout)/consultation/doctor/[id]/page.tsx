@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { getUserInfo } from "@/services/auth.services"
 import { getDoctorById } from "@/services/doctor.services"
 import { type IDoctorDetails } from "@/types/doctor.types"
+import { getProfileImageSrc } from "@/lib/profileImage"
 import { format } from "date-fns"
 import Link from "next/link"
 
@@ -123,7 +124,7 @@ const ConsultationDoctorByIdPage = async ({
         <div className="absolute -bottom-12 left-8 h-36 w-36 rounded-full bg-cyan-200/25 blur-3xl" />
         <div className="flex flex-col gap-4 md:flex-row md:items-start">
           <Avatar className="size-24 ring-4 ring-white shadow-sm">
-            <AvatarImage src={doctorDetails.profilePhoto} alt={doctorDetails.name} />
+            <AvatarImage src={getProfileImageSrc(doctorDetails.profilePhoto)} alt={doctorDetails.name} />
             <AvatarFallback>{getInitials(doctorDetails.name)}</AvatarFallback>
           </Avatar>
 

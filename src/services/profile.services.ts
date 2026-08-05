@@ -1,6 +1,7 @@
 "use server";
 
 import { httpClient } from "@/lib/axios/httpClient";
+import { withProfilePhotoCacheBust } from "@/lib/utils";
 
 export const changePasswordAction = async (oldPassword: string, newPassword: string) => {
   try {
@@ -16,7 +17,8 @@ export const changePasswordAction = async (oldPassword: string, newPassword: str
 
 export const getMyProfileAction = async () => {
   try {
-    return await httpClient.get("/auth/me");
+    const response = await httpClient.get("/auth/me");
+    return withProfilePhotoCacheBust(response);
   } catch (error) {
     console.log("Error fetching profile:", error);
     throw error;

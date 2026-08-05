@@ -1,14 +1,14 @@
 "use server";
 
 import { httpClient } from "@/lib/axios/httpClient";
+import { withProfilePhotoCacheBust } from "@/lib/utils";
 import { ICreateDoctorPayload, IDoctor, IDoctorDetails, IUpdateDoctorPayload } from "@/types/doctor.types";
 import { ISpecialty } from "@/types/specialty.types";
-
 
 export const getDoctors = async (queryString : string) => {
     try {
         const doctors = await httpClient.get<IDoctor[]>(queryString ? `/doctors?${queryString}` : "/doctors");
-        return doctors;
+        return withProfilePhotoCacheBust(doctors);
     } catch (error) {
         console.log("Error fetching doctors:", error);
         throw error;
@@ -28,7 +28,7 @@ export const getAllSpecialties = async () => {
 export const getTopRatedDoctors = async (limit = 3) => {
     try {
         const doctors = await httpClient.get<IDoctor[]>(`/doctors/top-rated?limit=${limit}`);
-        return doctors;
+        return withProfilePhotoCacheBust(doctors);
     } catch (error) {
         console.log("Error fetching top rated doctors:", error);
         throw error;
@@ -58,7 +58,7 @@ export const updateDoctor = async (id: string, payload: IUpdateDoctorPayload) =>
 export const updateDoctorProfile = async (id: string, formData: FormData) => {
     try {
         const response = await httpClient.patch<IDoctor>(`/doctors/${id}`, formData);
-        return response;
+        return withProfilePhotoCacheBust(response);
     } catch (error) {
         console.log("Error updating doctor profile:", error);
         throw error;
@@ -78,7 +78,7 @@ export const deleteDoctor = async (id: string) => {
 export const getDoctorById = async (id: string) => {
     try {
         const doctor = await httpClient.get<IDoctorDetails>(`/doctors/${id}`);
-        return doctor;
+        return withProfilePhotoCacheBust(doctor);
     } catch (error) {
         console.log("Error fetching doctor by id:", error);
         throw error;

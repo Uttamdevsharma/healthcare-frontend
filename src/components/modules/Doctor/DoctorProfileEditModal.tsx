@@ -1,17 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserRound, Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { updateDoctorProfile } from "@/services/doctor.services";
+import { type IDoctor } from "@/types/doctor.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  bumpProfilePhotoVersion,
+  getProfileImageSrc,
+  getProfilePhotoVersion,
+  subscribeProfilePhotoVersion,
+} from "@/lib/profileImage";
 import { toast } from "sonner";
 
 const updateDoctorProfileSchema = z.object({
@@ -47,6 +54,19 @@ interface DoctorProfileEditModalProps {
   onSuccess?: () => void;
 }
 
+const buildDefaultValues = (initialData: DoctorProfileEditModalProps["initialData"]): UpdateDoctorProfileForm => ({
+  name: initialData.name,
+  contactNumber: initialData.contactNumber || "",
+  address: initialData.address || "",
+  registrationNumber: initialData.registrationNumber,
+  experience: initialData.experience != null ? String(initialData.experience) : "",
+  gender: initialData.gender,
+  appointmentFee: initialData.appointmentFee != null ? String(initialData.appointmentFee) : "",
+  qualification: initialData.qualification,
+  currentWorkingPlace: initialData.currentWorkingPlace,
+  designation: initialData.designation,
+});
+
 export function DoctorProfileEditModal({
   doctorId,
   initialData,
@@ -56,22 +76,48 @@ export function DoctorProfileEditModal({
   const [previewImage, setPreviewImage] = useState<string | null>(initialData.profilePhoto || null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const queryClient = useQueryClient();
+  const photoVersion = useSyncExternalStore(subscribeProfilePhotoVersion, getProfilePhotoVersion);
 
   const form = useForm<UpdateDoctorProfileForm>({
     resolver: zodResolver(updateDoctorProfileSchema),
-    defaultValues: {
-      name: initialData.name,
-      contactNumber: initialData.contactNumber || "",
-      address: initialData.address || "",
-      registrationNumber: initialData.registrationNumber,
-      experience: initialData.experience ? String(initialData.experience) : "",
-      gender: initialData.gender,
-      appointmentFee: initialData.appointmentFee ? String(initialData.appointmentFee) : "",
-      qualification: initialData.qualification,
-      currentWorkingPlace: initialData.currentWorkingPlace,
-      designation: initialData.designation,
-    },
+    defaultValues: buildDefaultValues(initialData),
   });
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedFile(null);
+      setPreviewImage(initialData.profilePhoto || null);
+      form.reset(buildDefaultValues(initialData));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData]);
+
+  const applyDoctorUpdateToCachedLists = (updatedDoctor?: IDoctor | null) => {
+    if (!updatedDoctor) {
+      return;
+    }
+
+    const updateList = (cached: unknown) => {
+      if (!cached || typeof cached !== "object" || !("data" in cached)) {
+        return cached;
+      }
+      const payload = cached as { data?: unknown };
+      if (!Array.isArray(payload.data)) {
+        return cached;
+      }
+      return {
+        ...cached,
+        data: payload.data.map((item) =>
+          item && typeof item === "object" && String((item as { id?: unknown }).id) === String(doctorId)
+            ? { ...(item as object), ...(updatedDoctor as object) }
+            : item
+        ),
+      };
+    };
+
+    queryClient.setQueriesData({ queryKey: ["doctors"] }, updateList);
+    queryClient.setQueriesData({ queryKey: ["top-rated-doctors"] }, updateList);
+  };
 
   const mutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -79,23 +125,31 @@ export function DoctorProfileEditModal({
     },
     onSuccess: (response) => {
       toast.success("Profile updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["my-profile-page"] });
-      queryClient.invalidateQueries({ queryKey: ["doctor", doctorId] });
-      queryClient.invalidateQueries({ queryKey: ["top-rated-doctors"] });
+      applyDoctorUpdateToCachedLists(response.data);
+      queryClient.invalidateQueries({ queryKey: ["my-profile-page"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["doctor", doctorId], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["top-rated-doctors"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["doctors"], refetchType: "all" });
+      bumpProfilePhotoVersion();
+      const updatedProfilePhoto = response.data?.profilePhoto ?? initialData.profilePhoto;
       setIsOpen(false);
       setSelectedFile(null);
-      setPreviewImage(initialData.profilePhoto || null);
+      setPreviewImage(updatedProfilePhoto || null);
+      const updatedGender =
+        response.data?.gender === "MALE" || response.data?.gender === "FEMALE"
+          ? response.data.gender
+          : initialData.gender;
       form.reset({
-        name: initialData.name,
-        contactNumber: initialData.contactNumber || "",
-        address: initialData.address || "",
-        registrationNumber: initialData.registrationNumber,
-        experience: initialData.experience ? String(initialData.experience) : "",
-        gender: initialData.gender,
-        appointmentFee: initialData.appointmentFee ? String(initialData.appointmentFee) : "",
-        qualification: initialData.qualification,
-        currentWorkingPlace: initialData.currentWorkingPlace,
-        designation: initialData.designation,
+        name: response.data?.name ?? initialData.name,
+        contactNumber: response.data?.contactNumber ?? initialData.contactNumber,
+        address: response.data?.address ?? initialData.address,
+        registrationNumber: response.data?.registrationNumber ?? initialData.registrationNumber,
+        experience: response.data?.experience != null ? String(response.data.experience) : "",
+        gender: updatedGender,
+        appointmentFee: response.data?.appointmentFee != null ? String(response.data.appointmentFee) : "",
+        qualification: response.data?.qualification ?? initialData.qualification,
+        currentWorkingPlace: response.data?.currentWorkingPlace ?? initialData.currentWorkingPlace,
+        designation: response.data?.designation ?? initialData.designation,
       });
       onSuccess?.();
     },
@@ -127,40 +181,50 @@ export function DoctorProfileEditModal({
 
   const handleSubmit = (data: UpdateDoctorProfileForm) => {
     const formData = new FormData();
-    
+
     if (selectedFile) {
       formData.append("profilePhoto", selectedFile);
     }
-    
-    // Convert string numbers to actual numbers for the API
-    const doctorData = {
-      ...data,
-      experience: data.experience ? parseInt(data.experience, 10) : undefined,
-      appointmentFee: data.appointmentFee ? parseFloat(data.appointmentFee) : undefined,
+
+    const initialValues: Record<string, string | undefined> = {
+      name: initialData.name,
+      contactNumber: initialData.contactNumber || "",
+      address: initialData.address || "",
+      registrationNumber: initialData.registrationNumber,
+      experience: initialData.experience != null ? String(initialData.experience) : "",
+      gender: initialData.gender || "",
+      appointmentFee: initialData.appointmentFee != null ? String(initialData.appointmentFee) : "",
+      qualification: initialData.qualification,
+      currentWorkingPlace: initialData.currentWorkingPlace,
+      designation: initialData.designation,
     };
-    
-    formData.append("doctor", JSON.stringify(doctorData));
+
+    const doctorData: Record<string, string | number> = {};
+
+    (Object.keys(initialValues) as Array<keyof UpdateDoctorProfileForm>).forEach((key) => {
+      const value = (data[key] ?? "").toString().trim();
+      if (value !== (initialValues[key] ?? "").toString().trim()) {
+        if (key === "experience" && value) {
+          doctorData[key] = parseInt(value, 10);
+        } else if (key === "appointmentFee" && value) {
+          doctorData[key] = parseFloat(value);
+        } else {
+          doctorData[key] = value;
+        }
+      }
+    });
+
+    if (Object.keys(doctorData).length > 0) {
+      formData.append("doctor", JSON.stringify(doctorData));
+    }
 
     mutation.mutate(formData);
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      setSelectedFile(null);
-      setPreviewImage(initialData.profilePhoto || null);
-      form.reset({
-        name: initialData.name,
-        contactNumber: initialData.contactNumber || "",
-        address: initialData.address || "",
-        registrationNumber: initialData.registrationNumber,
-        experience: initialData.experience ? String(initialData.experience) : "",
-        gender: initialData.gender,
-        appointmentFee: initialData.appointmentFee ? String(initialData.appointmentFee) : "",
-        qualification: initialData.qualification,
-        currentWorkingPlace: initialData.currentWorkingPlace,
-        designation: initialData.designation,
-      });
-    }
+    setSelectedFile(null);
+    setPreviewImage(initialData.profilePhoto || null);
+    form.reset(buildDefaultValues(initialData));
     setIsOpen(open);
   };
 
@@ -182,7 +246,7 @@ export function DoctorProfileEditModal({
             <div className="relative">
               <Avatar className="h-24 w-24 border-4 border-primary/20">
                 {previewImage ? (
-                  <AvatarImage src={previewImage} alt={initialData.name} />
+                  <AvatarImage src={getProfileImageSrc(previewImage, photoVersion)} alt={initialData.name} />
                 ) : (
                   <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
                     {initialData.name?.slice(0, 2).toUpperCase()}

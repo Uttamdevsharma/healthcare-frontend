@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyProfileAction } from "@/services/profile.services";
 import { useQuery } from "@tanstack/react-query";
+import { getProfileImageSrc, getProfilePhotoVersion, subscribeProfilePhotoVersion } from "@/lib/profileImage";
+import { useSyncExternalStore } from "react";
 import {
   Activity,
   Calendar,
@@ -64,6 +66,7 @@ const MyProfileContent = () => {
 
   const profile = profileRes?.data ?? null;
   const role = profile?.user?.role;
+  const photoVersion = useSyncExternalStore(subscribeProfilePhotoVersion, getProfilePhotoVersion);
 
   if (isLoading) {
     return (
@@ -89,7 +92,7 @@ const MyProfileContent = () => {
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <Avatar className="h-24 w-24 border-4 border-primary/20">
-              <AvatarImage src={profile.profilePhoto} alt={profile.name} />
+              <AvatarImage src={getProfileImageSrc(profile.profilePhoto, photoVersion)} alt={profile.name} />
               <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
                 {profile.name?.slice(0, 2).toUpperCase()}
               </AvatarFallback>

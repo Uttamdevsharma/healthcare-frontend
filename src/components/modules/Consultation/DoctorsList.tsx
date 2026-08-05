@@ -34,11 +34,12 @@ import {
 import { useServerManagedDataTableSearch } from "@/hooks/useServerManagedDataTableSearch"
 import { getAllSpecialties, getDoctors } from "@/services/doctor.services"
 import { type IDoctor } from "@/types/doctor.types"
+import { getProfileImageSrc, getProfilePhotoVersion, subscribeProfilePhotoVersion } from "@/lib/profileImage"
 import { useQuery } from "@tanstack/react-query"
 import { MapPin, SearchX, SlidersHorizontal, Star, Stethoscope } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useMemo, useState, useSyncExternalStore } from "react"
 
 const DEFAULT_PAGE = 1
 const DEFAULT_LIMIT = 12
@@ -153,6 +154,7 @@ const DoctorCard = ({
   isAuthenticated: boolean
   viewerRole?: string | null
 }) => {
+  const photoVersion = useSyncExternalStore(subscribeProfilePhotoVersion, getProfilePhotoVersion)
   const specialtiesList = doctor.specialties?.map((item) => item.specialty.title) ?? []
   const rating = doctor.averageRating ?? 0
   const fee = doctor.appointmentFee
@@ -165,7 +167,7 @@ const DoctorCard = ({
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
             <Avatar className="size-20 bg-muted/40 ring-4 ring-muted/40 transition group-hover:ring-primary/10">
-              <AvatarImage src={doctor.profilePhoto} alt={doctor.name} className="object-cover" />
+              <AvatarImage src={getProfileImageSrc(doctor.profilePhoto, photoVersion)} alt={doctor.name} className="object-cover" />
               <AvatarFallback>{getDoctorInitials(doctor.name)}</AvatarFallback>
             </Avatar>
           </div>
