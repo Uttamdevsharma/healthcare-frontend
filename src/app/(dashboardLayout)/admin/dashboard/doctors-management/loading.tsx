@@ -1,4 +1,7 @@
+import SkeletonTable from "@/components/shared/skeletons/SkeletonTable";
+
 export default function AdminsDoctorsManagementLoading() {
-  // Or a custom loading skeleton component
-  return <p>Loading Admins Doctors Management...</p>;
+  return (
+    <SkeletonTable columns={10} rows={6} search filters={3} action pagination />
+  );
 }

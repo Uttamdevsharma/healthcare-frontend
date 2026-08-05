@@ -58,10 +58,10 @@ const DashboardSidebarContent = ({dashboardHome, navItems, userInfo} : Dashboard
                       href={item.href}
                       key={id}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out",
                         isActive
                           ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                          : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
                       )}
                     >
                       <Icon className="w-4 h-4" />

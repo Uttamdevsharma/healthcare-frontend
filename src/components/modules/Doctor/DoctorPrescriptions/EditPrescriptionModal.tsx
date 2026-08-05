@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { updatePrescription } from "@/services/prescription.services"
 import type { IPrescription } from "@/types/prescription.types"
 import { useQueryClient } from "@tanstack/react-query"
+import { Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
@@ -108,7 +109,14 @@ const EditPrescriptionModal = ({
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Updating Rx..." : "Update & Send Rx"}
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Updating Rx...
+                </>
+              ) : (
+                "Update & Send Rx"
+              )}
             </Button>
           </div>
         </form>

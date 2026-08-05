@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { IPatient } from "@/types/patient.types";
 import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -66,7 +67,14 @@ const DeletePatientConfirmationDialog = ({
             disabled={loading}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {loading ? "Deleting..." : "Delete Patient"}
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete Patient"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

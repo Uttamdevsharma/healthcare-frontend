@@ -76,7 +76,14 @@ const DeleteDoctorConfirmationDialog = ({
             }}
             disabled={isPending}
           >
-            {isPending ? "Deleting..." : "Delete"}
+            {isPending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

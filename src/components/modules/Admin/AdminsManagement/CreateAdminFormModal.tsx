@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createAdminAction } from "@/app/(dashboardLayout)/admin/dashboard/admins-management/_action";
@@ -130,7 +130,14 @@ const CreateAdminFormModal = () => {
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Creating..." : "Create Admin"}
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Admin"
+              )}
             </Button>
           </div>
         </form>

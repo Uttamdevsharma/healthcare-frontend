@@ -19,7 +19,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { useMutation } from "@tanstack/react-query"
 import { format } from "date-fns"
-import { AlertCircle, CreditCard, Wallet } from "lucide-react"
+import { AlertCircle, CreditCard, Loader2, Wallet } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -222,7 +222,11 @@ const AppointmentBookingConfirmation = ({
               onClick={() => void handlePayNow()}
               disabled={payNowMutation.isPending || payLaterMutation.isPending}
             >
-              <CreditCard className="size-4" />
+              {payNowMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <CreditCard className="size-4" />
+              )}
               {payNowMutation.isPending ? "Redirecting to Payment..." : "Confirm & Pay Now"}
             </Button>
 
@@ -233,7 +237,11 @@ const AppointmentBookingConfirmation = ({
               onClick={() => void handlePayLater()}
               disabled={payNowMutation.isPending || payLaterMutation.isPending}
             >
-              <Wallet className="size-4" />
+              {payLaterMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Wallet className="size-4" />
+              )}
               {payLaterMutation.isPending ? "Booking..." : "Book & Pay Later"}
             </Button>
 

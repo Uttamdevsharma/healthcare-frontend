@@ -1,4 +1,5 @@
+import SkeletonTable from "@/components/shared/skeletons/SkeletonTable";
+
 export default function AdminsSchedulesManagementLoading() {
-  // Or a custom loading skeleton component
-  return <p>Loading Admins Schedules Management...</p>;
+  return <SkeletonTable columns={8} rows={6} search action pagination />;
 }

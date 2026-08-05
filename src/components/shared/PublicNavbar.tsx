@@ -25,7 +25,7 @@ const BrandLogo = ({ compact = false }: { compact?: boolean }) => (
     {!compact && (
       <span className="flex flex-col leading-none">
         <span className="text-lg font-bold tracking-tight text-foreground">
-          Kalinga
+          DocCare
         </span>
         <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Health
@@ -48,7 +48,7 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:bg-background/95">
       <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between gap-4 px-4 md:px-8 lg:px-16">
         {/* Logo */}
-        <Link href="/" aria-label="Kalinga Health — Home" className="shrink-0">
+        <Link href="/" aria-label="DocCare — Home" className="shrink-0">
           <BrandLogo />
         </Link>
 
@@ -61,10 +61,10 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
                 key={link.label}
                 href={link.href}
                 className={cn(
-                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                  "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer",
                   isActive
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground",
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-sm",
                 )}
               >
                 {link.label}
@@ -80,7 +80,7 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
               <Link href={getDefaultDashboardRoute(userRole)}>
                 <Button
                   variant="outline"
-                  className="rounded-full border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
+                  className="rounded-full border-primary/30 text-primary hover:bg-primary/10 hover:text-primary transition-all duration-200 ease-in-out cursor-pointer"
                 >
                   <LayoutDashboard className="mr-2 h-4 w-4" />
                   Dashboard
@@ -90,7 +90,7 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
                 variant="default"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+                className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 ease-in-out cursor-pointer"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 {isLoggingOut ? "Logging out..." : "Logout"}
@@ -101,13 +101,13 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
               <Link href="/register">
                 <Button
                   variant="outline"
-                  className="rounded-full border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
+                  className="rounded-full border-primary/30 text-primary hover:bg-primary/10 hover:text-primary transition-all duration-200 ease-in-out cursor-pointer"
                 >
                   Sign Up
                 </Button>
               </Link>
               <Link href="/login">
-                <Button className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 ease-in-out cursor-pointer">
                   Login
                 </Button>
               </Link>
@@ -118,76 +118,76 @@ const PublicNavbar = ({ userRole }: { userRole: UserRole | null }) => {
         {/* Mobile Menu */}
         <div className="md:hidden">
           <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="border-primary/30 text-primary hover:bg-primary/5"
-                aria-label="Open navigation menu"
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
+<SheetTrigger asChild>
+               <Button
+                 variant="outline"
+                 size="icon"
+                 className="border-primary/30 text-primary hover:bg-primary/10 transition-all duration-200 ease-in-out cursor-pointer"
+                 aria-label="Open navigation menu"
+               >
+                 <Menu className="h-4 w-4" />
+               </Button>
+             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] p-0 sm:w-[360px]">
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               <div className="flex h-16 items-center border-b px-6">
                 <BrandLogo />
               </div>
-              <nav className="flex flex-col gap-1 px-4 py-6">
-                {navItems.map((link) => {
-                  const isActive = pathname === link.href;
-                  return (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      className={cn(
-                        "rounded-lg px-4 py-3 text-base font-medium transition-colors",
-                        isActive
-                          ? "bg-primary/10 text-primary"
-                          : "text-foreground hover:bg-accent",
-                      )}
-                    >
-                      {link.label}
-                    </Link>
-                  );
-                })}
+<nav className="flex flex-col gap-1 px-4 py-6">
+                 {navItems.map((link) => {
+                   const isActive = pathname === link.href;
+                   return (
+                     <Link
+                       key={link.label}
+                       href={link.href}
+                       className={cn(
+                         "rounded-lg px-4 py-3 text-base font-medium transition-all duration-200 ease-in-out cursor-pointer",
+isActive
+                            ? "bg-primary/10 text-primary"
+                            : "text-foreground hover:bg-primary/10 hover:text-primary hover:shadow-sm",
+                       )}
+                     >
+                       {link.label}
+                     </Link>
+                   );
+                 })}
 
-                <div className="my-4 border-t pt-4">
-                  {userRole ? (
-                    <div className="flex flex-col gap-1">
-                      <Link
-                        href={getDefaultDashboardRoute(userRole)}
-                        className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-foreground hover:bg-accent"
-                      >
-                        <LayoutDashboard className="h-5 w-5" /> Dashboard
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        disabled={isLoggingOut}
-                        className="flex items-center gap-3 rounded-lg px-4 py-3 text-left text-base font-medium text-destructive hover:bg-accent"
-                      >
-                        <LogOut className="h-5 w-5" />{" "}
-                        {isLoggingOut ? "Logging out..." : "Logout"}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      <Link
-                        href="/register"
-                        className="flex items-center justify-center gap-3 rounded-lg bg-primary px-4 py-3 text-base font-medium text-primary-foreground"
-                      >
-                        Sign Up
-                      </Link>
-                      <Link
-                        href="/login"
-                        className="flex items-center justify-center gap-3 rounded-lg border border-primary/30 px-4 py-3 text-base font-medium text-primary"
-                      >
-                        Login
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </nav>
+                 <div className="my-4 border-t pt-4">
+                   {userRole ? (
+                     <div className="flex flex-col gap-1">
+                       <Link
+                         href={getDefaultDashboardRoute(userRole)}
+                         className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-all duration-200 ease-in-out cursor-pointer"
+                       >
+                         <LayoutDashboard className="h-5 w-5" /> Dashboard
+                       </Link>
+                       <button
+                         onClick={handleLogout}
+                         disabled={isLoggingOut}
+                         className="flex items-center gap-3 rounded-lg px-4 py-3 text-left text-base font-medium text-destructive hover:bg-accent transition-all duration-200 ease-in-out cursor-pointer"
+                       >
+                         <LogOut className="h-5 w-5" />{" "}
+                         {isLoggingOut ? "Logging out..." : "Logout"}
+                       </button>
+                     </div>
+                   ) : (
+                     <div className="flex flex-col gap-2">
+                       <Link
+                         href="/register"
+                         className="flex items-center justify-center gap-3 rounded-lg bg-primary px-4 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90 transition-all duration-200 ease-in-out cursor-pointer"
+                       >
+                         Sign Up
+                       </Link>
+                       <Link
+                         href="/login"
+                         className="flex items-center justify-center gap-3 rounded-lg border border-primary/30 px-4 py-3 text-base font-medium text-primary hover:bg-primary/5 transition-all duration-200 ease-in-out cursor-pointer"
+                       >
+                         Login
+                       </Link>
+                     </div>
+                   )}
+                 </div>
+               </nav>
             </SheetContent>
           </Sheet>
         </div>

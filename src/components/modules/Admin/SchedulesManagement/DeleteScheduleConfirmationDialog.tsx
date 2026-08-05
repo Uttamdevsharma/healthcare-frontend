@@ -14,6 +14,7 @@ import {
 import { type ISchedule } from "@/types/schedule.types"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { format } from "date-fns"
+import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -89,7 +90,14 @@ const DeleteScheduleConfirmationDialog = ({
             }}
             disabled={isPending}
           >
-            {isPending ? "Deleting..." : "Delete"}
+            {isPending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

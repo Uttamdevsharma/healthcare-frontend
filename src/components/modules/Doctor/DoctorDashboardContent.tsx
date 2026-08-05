@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getMyAppointments } from "@/services/appointment.services";
 import { getMyPrescriptions } from "@/services/prescription.services";
 import { getMyReviews } from "@/services/review.services";
@@ -142,7 +143,7 @@ const DoctorDashboardContent = () => {
             <Calendar className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loadingAppointments ? "..." : appointments.length}</div>
+            <div className="text-2xl font-bold">{loadingAppointments ? <Skeleton className="h-8 w-16" /> : appointments.length}</div>
             <p className="text-xs text-muted-foreground">Scheduled & completed consultations</p>
           </CardContent>
         </Card>
@@ -153,7 +154,7 @@ const DoctorDashboardContent = () => {
             <User className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loadingAppointments ? "..." : upcomingAppointments.length}</div>
+            <div className="text-2xl font-bold">{loadingAppointments ? <Skeleton className="h-8 w-16" /> : upcomingAppointments.length}</div>
             <p className="text-xs text-muted-foreground">Active pending visits</p>
           </CardContent>
         </Card>
@@ -164,7 +165,7 @@ const DoctorDashboardContent = () => {
             <FileText className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loadingPrescriptions ? "..." : prescriptions.length}</div>
+            <div className="text-2xl font-bold">{loadingPrescriptions ? <Skeleton className="h-8 w-16" /> : prescriptions.length}</div>
             <p className="text-xs text-muted-foreground">Digital Rx records</p>
           </CardContent>
         </Card>
@@ -175,7 +176,7 @@ const DoctorDashboardContent = () => {
             <Star className="h-4 w-4 text-amber-500 fill-amber-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loadingReviews ? "..." : avgRating}</div>
+            <div className="text-2xl font-bold">{loadingReviews ? <Skeleton className="h-8 w-16" /> : avgRating}</div>
             <p className="text-xs text-muted-foreground">Based on {reviews.length} patient reviews</p>
           </CardContent>
         </Card>

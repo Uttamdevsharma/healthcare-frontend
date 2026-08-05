@@ -29,7 +29,7 @@ import { getMyReviews } from "@/services/review.services"
 import type { IReview } from "@/types/review.types"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ColumnDef } from "@tanstack/react-table"
-import { Pencil, Star, Stethoscope, Trash2 } from "lucide-react"
+import { Loader2, Pencil, Star, Stethoscope, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -305,7 +305,14 @@ const EditReviewModal = ({ open, onOpenChange, review, onSave }: EditReviewModal
               Cancel
             </Button>
             <Button type="submit" disabled={loading || rating < 1}>
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </DialogFooter>
         </form>

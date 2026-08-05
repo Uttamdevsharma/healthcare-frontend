@@ -11,9 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { type ISpecialty } from "@/types/specialty.types"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Loader2 } from "lucide-react"
 
 interface SpecialtiesMultiSelectProps {
   specialties: ISpecialty[]
@@ -38,9 +39,7 @@ const SpecialtiesMultiSelect = ({
     .map((id) => specialties.find((specialty) => specialty.id === id)?.title)
     .filter((title): title is string => Boolean(title))
 
-  const triggerText = isLoadingSpecialties
-    ? "Loading specialties..."
-    : selectedTitles.length > 0
+  const triggerText = selectedTitles.length > 0
       ? `${selectedTitles.length} selected`
       : "Select specialties"
 
@@ -74,7 +73,13 @@ const SpecialtiesMultiSelect = ({
             )}
             disabled={isLoadingSpecialties || specialties.length === 0}
           >
-            <span className="truncate text-left">{triggerText}</span>
+            <span className="truncate text-left">
+              {isLoadingSpecialties ? (
+                <Loader2 className="size-4 animate-spin opacity-70" />
+              ) : (
+                triggerText
+              )}
+            </span>
             <ChevronDown className="size-4 opacity-70" />
           </Button>
         </DropdownMenuTrigger>
@@ -84,7 +89,14 @@ const SpecialtiesMultiSelect = ({
           className="w-(--radix-dropdown-menu-trigger-width) max-h-72 overflow-y-auto"
         >
           {isLoadingSpecialties ? (
-            <p className="text-muted-foreground px-2 py-1.5 text-sm">Loading specialties...</p>
+            <div className="space-y-1 p-2">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div key={index} className="flex items-center gap-3 px-2 py-1.5">
+                  <Skeleton className="size-4 shrink-0 rounded-sm" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              ))}
+            </div>
           ) : specialties.length === 0 ? (
             <p className="text-muted-foreground px-2 py-1.5 text-sm">No specialties available.</p>
           ) : (

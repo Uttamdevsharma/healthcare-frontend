@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { changePasswordAction } from "@/services/profile.services";
-import { KeyRound, Lock, Save } from "lucide-react";
+import { KeyRound, Loader2, Lock, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -121,7 +121,11 @@ const ChangePasswordForm = () => {
 
           <div className="flex justify-end pt-2">
             <Button type="submit" disabled={loading} className="gap-2">
-              <Save className="h-4 w-4" />
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
               {loading ? "Updating..." : "Update Password"}
             </Button>
           </div>

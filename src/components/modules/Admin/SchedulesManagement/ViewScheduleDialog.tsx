@@ -10,6 +10,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import { type ISchedule } from "@/types/schedule.types"
 import { useQuery } from "@tanstack/react-query"
 import { differenceInMinutes, format } from "date-fns"
@@ -88,8 +89,41 @@ const ViewScheduleDialog = ({
         <ScrollArea className="max-h-[calc(90vh-5.5rem)]">
           <div className="space-y-4 px-6 py-5">
             {(isLoading || isFetching) && (
-              <div className="rounded-md border p-4 text-sm text-muted-foreground">
-                Loading schedule details...
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border p-4">
+                    <Skeleton className="mb-3 h-4 w-16" />
+                    <div className="space-y-2.5">
+                      {Array.from({ length: 6 }, (_, index) => (
+                        <Skeleton key={index} className="h-4 w-3/4" />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border p-4">
+                    <Skeleton className="mb-3 h-4 w-20" />
+                    <div className="flex flex-wrap gap-2">
+                      <Skeleton className="h-6 w-24 rounded-full" />
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                      <Skeleton className="h-6 w-28 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  {Array.from({ length: 2 }, (_, cardIndex) => (
+                    <div key={cardIndex} className="rounded-lg border p-4">
+                      <Skeleton className="mb-3 h-4 w-40" />
+                      <div className="space-y-2">
+                        {Array.from({ length: 3 }, (_, rowIndex) => (
+                          <div key={rowIndex} className="rounded-md border p-2">
+                            <Skeleton className="h-4 w-2/3" />
+                            <Skeleton className="mt-2 h-4 w-1/3" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

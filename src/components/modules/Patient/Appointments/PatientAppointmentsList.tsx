@@ -20,6 +20,7 @@ import {
   CalendarClock,
   CircleDollarSign,
   CreditCard,
+  Loader2,
   Star,
   Video,
   XCircle,
@@ -248,7 +249,11 @@ const PatientAppointmentsList = ({
                         onClick={() => void handlePayNow(appointment.id)}
                         disabled={initiatePaymentMutation.isPending}
                       >
-                        <CreditCard className="size-4" />
+                        {initiatePaymentMutation.isPending ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <CreditCard className="size-4" />
+                        )}
                         {initiatePaymentMutation.isPending ? "Redirecting..." : "Pay Now"}
                       </Button>
                     ) : (

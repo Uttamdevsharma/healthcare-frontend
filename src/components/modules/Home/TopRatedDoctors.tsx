@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { UserStatus, type IDoctor } from "@/types/doctor.types";
 import Link from "next/link";
 import { getTopRatedDoctors } from "@/services/doctor.services";
@@ -46,7 +47,6 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
 
   return (
     <Card className="group relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-0 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-primary/10">
-      {/* Image Header */}
       <div className="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-muted/40">
         <div className="size-full overflow-hidden scale-[1.12]">
           <Avatar className="size-full rounded-none">
@@ -63,20 +63,16 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
         </Avatar>
         </div>
 
-        {/* Subtle bottom fade for visual depth */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/15 to-transparent" />
 
-        {/* Rating Badge */}
         <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-amber-500 shadow-md shadow-black/10 backdrop-blur">
           <Star className="size-3.5 fill-amber-500 text-amber-500" />
           {rating}
         </div>
 
-        {/* Wishlist Button */}
         <DoctorWishlistButton doctorName={doctor.name} />
       </div>
 
-      {/* Middle Content */}
       <CardContent className="flex-1 p-5 pb-4">
         <div className="flex items-center justify-between gap-2">
           <span className="line-clamp-1 text-xs font-semibold uppercase tracking-wide text-primary sm:text-sm">
@@ -121,7 +117,6 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
         )}
       </CardContent>
 
-      {/* Bottom Action & Pricing Area */}
       <CardFooter className="mt-auto items-center justify-between gap-3 border-t border-border/60 px-5 py-4">
         <div className="min-w-0">
           <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -159,12 +154,42 @@ const DoctorCard = ({ doctor }: { doctor: IDoctor }) => {
   );
 };
 
+const DoctorCardSkeleton = () => (
+  <Card className="group relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-0 transition-all duration-300">
+    <div className="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-muted/40">
+      <Skeleton className="size-full" />
+    </div>
+    <CardContent className="flex-1 p-5 pb-4">
+      <div className="flex items-center justify-between gap-2">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-5 w-16 rounded-full" />
+      </div>
+      <Skeleton className="mt-2 h-5 w-3/4" />
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-3 w-28" />
+      </div>
+    </CardContent>
+    <CardFooter className="mt-auto items-center justify-between gap-3 border-t border-border/60 px-5 py-4">
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Consultation Fees</p>
+        <Skeleton className="mt-0.5 h-6 w-16" />
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <Skeleton className="h-9 w-24 rounded-full" />
+        <Skeleton className="size-10 rounded-full" />
+      </div>
+    </CardFooter>
+  </Card>
+);
+
 interface TopRatedDoctorsProps {
   initialDoctors?: IDoctor[];
 }
 
 const TopRatedDoctors = ({ initialDoctors = [] }: TopRatedDoctorsProps) => {
-  const { data: doctorsResponse } = useQuery({
+  const { data: doctorsResponse, isLoading } = useQuery({
     queryKey: ["top-rated-doctors"],
     queryFn: () => getTopRatedDoctors(),
     initialData: {
@@ -176,18 +201,40 @@ const TopRatedDoctors = ({ initialDoctors = [] }: TopRatedDoctorsProps) => {
 
   const doctors = doctorsResponse?.data ?? [];
 
+  if (isLoading && doctors.length === 0) {
+    return (
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-50/80 via-background to-slate-50/80 dark:from-background dark:via-muted/20 dark:to-background py-20 lg:py-28">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 blur-3xl rounded-full pointer-events-none" />
+
+        <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <Skeleton className="mx-auto h-8 w-64" />
+            <Skeleton className="mx-auto mt-4 h-4 w-96 max-w-full" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-14">
+            {Array.from({ length: 6 }, (_, i) => (
+              <DoctorCardSkeleton key={i} />
+            ))}
+          </div>
+
+          <div className="text-center mt-14">
+            <Skeleton className="mx-auto h-11 w-48 rounded-full" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   if (doctors.length === 0) {
     return null;
   }
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-slate-50/80 via-background to-slate-50/80 dark:from-background dark:via-muted/20 dark:to-background py-20 lg:py-28">
-      {/* Subtle Background Glow Elements */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 blur-3xl rounded-full pointer-events-none" />
 
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-foreground">
             Meet Our Top Rated Doctors
@@ -197,14 +244,12 @@ const TopRatedDoctors = ({ initialDoctors = [] }: TopRatedDoctorsProps) => {
           </p>
         </div>
 
-        {/* Doctors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-14">
           {doctors.map((doctor) => (
             <DoctorCard key={String(doctor.id)} doctor={doctor} />
           ))}
         </div>
 
-        {/* Bottom CTA Button */}
         <div className="text-center mt-14">
           <Button asChild size="lg" className="rounded-full px-8 gap-2 font-semibold shadow-lg shadow-primary/20 hover:gap-3 transition-all">
             <Link href="/consultation">
@@ -213,7 +258,6 @@ const TopRatedDoctors = ({ initialDoctors = [] }: TopRatedDoctorsProps) => {
             </Link>
           </Button>
         </div>
-
       </div>
     </section>
   );

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import type { IAppointment } from "@/types/appointment.types"
 import { useQueryClient } from "@tanstack/react-query"
+import { Loader2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -80,7 +81,14 @@ const CancelAppointmentConfirmationDialog = ({
             disabled={loading}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {loading ? "Canceling..." : "Yes, Cancel Appointment"}
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Canceling...
+              </>
+            ) : (
+              "Yes, Cancel Appointment"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

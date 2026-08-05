@@ -12,11 +12,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { type IDoctorDetails, type IDoctorScheduleItem } from "@/types/doctor.types"
 import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
-import { CalendarPlus, Clock3, Loader2 } from "lucide-react"
+import { CalendarPlus, Clock3 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
@@ -146,9 +147,19 @@ const BookAppointmentModal = ({
             </div>
 
             {isBusy && (
-              <div className="flex items-center gap-2 rounded-xl border p-4 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" />
-                Loading available schedules...
+              <div className="grid gap-3">
+                {Array.from({ length: 3 }, (_, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4"
+                  >
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3.5 w-28" />
+                    </div>
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                  </div>
+                ))}
               </div>
             )}
 

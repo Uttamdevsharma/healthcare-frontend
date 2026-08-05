@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   getAppointmentByVideoCallId,
   getVideoCallToken,
@@ -407,14 +408,33 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
         {(isLoading || isError || hasError || !appointment) && (
           <Card className="w-full max-w-md border-white/10 bg-white/5 text-white">
             <CardHeader className="text-center">
-              <CardTitle className="text-white">Video Consultation Room</CardTitle>
-              <CardDescription className="text-white/60">
-                {connection.label}
-              </CardDescription>
+              <CardTitle className="text-white">
+                {isLoading ? (
+                  <Skeleton className="mx-auto h-6 w-52 bg-white/10" />
+                ) : (
+                  "Video Consultation Room"
+                )}
+              </CardTitle>
+              <div className="mx-auto">
+                {isLoading ? (
+                  <Skeleton className="h-4 w-64 bg-white/10" />
+                ) : (
+                  <CardDescription className="text-white/60">
+                    {connection.label}
+                  </CardDescription>
+                )}
+              </div>
             </CardHeader>
-            <CardContent className="flex justify-center pb-6">
+            <CardContent className="flex flex-col items-center gap-4 pb-6">
               {isLoading ? (
-                <Loader2 className="size-8 animate-spin text-white/60" />
+                <>
+                  <Skeleton className="size-28 rounded-full bg-white/10" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-40 bg-white/10" />
+                    <Skeleton className="h-4 w-28 bg-white/10" />
+                  </div>
+                  <Skeleton className="h-10 w-44 bg-white/10" />
+                </>
               ) : (
                 <Button asChild variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
                   <Link href="/dashboard/my-appointments">Back to Appointments</Link>

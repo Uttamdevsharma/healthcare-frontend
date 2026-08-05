@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import type { IAppointment } from "@/types/appointment.types"
 import { useQueryClient } from "@tanstack/react-query"
-import { Star } from "lucide-react"
+import { Loader2, Star } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -164,7 +164,14 @@ const GiveReviewModal = ({ open, onOpenChange, appointment }: GiveReviewModalPro
               Cancel
             </Button>
             <Button type="submit" disabled={loading || rating < 1}>
-              {loading ? "Submitting..." : "Submit Review"}
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Review"
+              )}
             </Button>
           </DialogFooter>
         </form>

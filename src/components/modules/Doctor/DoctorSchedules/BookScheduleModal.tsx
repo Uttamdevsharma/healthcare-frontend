@@ -14,13 +14,14 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import { getMyDoctorSchedules } from "@/services/doctorSchedule.services"
 import { getSchedules } from "@/services/schedule.services"
 import { type IDoctorSchedule } from "@/types/doctorSchedule.types"
 import { type ISchedule } from "@/types/schedule.types"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { format } from "date-fns"
-import { CalendarPlus } from "lucide-react"
+import { CalendarPlus, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
@@ -157,8 +158,19 @@ const BookScheduleModal = () => {
         <ScrollArea className="max-h-[calc(90vh-5.5rem)]">
           <div className="space-y-4 px-6 py-5">
             {(isLoadingSchedules || isLoadingMySchedules) && (
-              <div className="rounded-md border p-4 text-sm text-muted-foreground">
-                Loading available schedules...
+              <div className="space-y-2">
+                {Array.from({ length: 4 }, (_, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start gap-3 rounded-md border px-3 py-2"
+                  >
+                    <Skeleton className="mt-0.5 size-4 shrink-0 rounded-sm" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3.5 w-28" />
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -206,7 +218,14 @@ const BookScheduleModal = () => {
                 onClick={() => void handleBookSchedules()}
                 disabled={isPending || selectedScheduleIds.length === 0}
               >
-                {isPending ? "Booking..." : `Book Selected (${selectedScheduleIds.length})`}
+                {isPending ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Booking...
+                  </>
+                ) : (
+                  `Book Selected (${selectedScheduleIds.length})`
+                )}
               </Button>
             </DialogFooter>
           </div>

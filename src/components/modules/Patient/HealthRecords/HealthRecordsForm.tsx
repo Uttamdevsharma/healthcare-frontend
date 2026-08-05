@@ -14,7 +14,7 @@ import {
 import { updateMyPatientProfile } from "@/services/patientProfile.services";
 import { IPatient } from "@/types/patient.types";
 import { useQueryClient } from "@tanstack/react-query";
-import { FilePlus, Heart, Save } from "lucide-react";
+import { FilePlus, Heart, Loader2, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -201,7 +201,11 @@ try {
 
         <div className="flex justify-end">
           <Button type="submit" disabled={loading} className="gap-2">
-            <Save className="h-4 w-4" />
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
             {loading ? "Saving..." : "Save Health Records"}
           </Button>
         </div>

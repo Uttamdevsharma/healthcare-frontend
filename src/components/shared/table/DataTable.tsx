@@ -14,6 +14,7 @@ import DataTableFilters, {
 } from "./DataTableFilters";
 import DataTablePagination from "./DataTablePagination";
 import DataTableSearch from "./DataTableSearch";
+import SkeletonTable from "../skeletons/SkeletonTable";
 
 interface DataTableActions<TData> {
     onView ?: (data : TData) => void;
@@ -153,15 +154,16 @@ const DataTable = <TData,>({ data = [] as TData[], columns, actions, toolbarActi
     return (
       <div className="relative">
         {showLoadingOverlay && (
-          <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-              <span className="text-sm text-muted-foreground">Loading...</span>
-            </div>
-          </div>
+          <SkeletonTable
+            columns={tableColumns.length}
+            search={Boolean(search)}
+            filters={filters?.configs?.length ?? 0}
+            action={Boolean(toolbarAction)}
+            pagination={Boolean(pagination)}
+          />
         )}
 
-        {(search || filters || toolbarAction) && (
+        {!showLoadingOverlay && (search || filters || toolbarAction) && (
           <div className="mb-4 flex flex-wrap items-start gap-3">
             {search && (
               <DataTableSearch
@@ -191,7 +193,8 @@ const DataTable = <TData,>({ data = [] as TData[], columns, actions, toolbarActi
         )}
 
         {/* // Table */}
-        <div className="rounded-lg border">
+        {!showLoadingOverlay && (
+          <div className="rounded-lg border">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((hg) => (
@@ -264,7 +267,8 @@ const DataTable = <TData,>({ data = [] as TData[], columns, actions, toolbarActi
               isLoading={hydratedIsLoading}
             />
           )}
-        </div>
+          </div>
+        )}
       </div>
     );
 }
