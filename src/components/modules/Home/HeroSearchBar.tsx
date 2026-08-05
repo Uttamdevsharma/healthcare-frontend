@@ -41,7 +41,7 @@ const HeroSearchBar = ({ specialties }: HeroSearchBarProps) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-full max-w-xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-[0px_20px_40px_-12px_rgba(0,0,0,0.15)] sm:flex-row sm:items-center"
+      className="flex w-full max-w-xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-[0px_20px_40px_-12px_rgba(0,0,0,0.15)] sm:flex-row sm:items-center z-30"
     >
       <Select value={specialty} onValueChange={setSpecialty}>
         <SelectTrigger className="h-12 w-full border-0 bg-muted/50 px-4 text-sm sm:w-44">

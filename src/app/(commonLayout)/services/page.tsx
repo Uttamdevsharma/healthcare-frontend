@@ -52,15 +52,6 @@ const services = [
     bgColor: "bg-orange-50",
     borderColor: "border-orange-200",
   },
-  {
-    icon: Users,
-    title: "Telemedicine",
-    description: "Secure video consultations with licensed healthcare providers from the comfort of your home.",
-    features: ["Video consultations", "Secure messaging", "Digital prescriptions", "Follow-up care"],
-    color: "from-teal-500 to-teal-600",
-    bgColor: "bg-teal-50",
-    borderColor: "border-teal-200",
-  },
 ];
 
 const serviceCategories = [
@@ -68,7 +59,6 @@ const serviceCategories = [
   { title: "Specialty Care", count: "200+ specialists", icon: Heart },
   { title: "Diagnostics", count: "1000+ tests", icon: Beaker },
   { title: "Pharmacy", count: "2000+ medications", icon: Pill },
-  { title: "Telemedicine", count: "24/7 available", icon: Smartphone },
   { title: "Wellness", count: "Complete packages", icon: Shield },
 ];
 
@@ -147,7 +137,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Main Services Grid */}
-      <section className="py-20 lg:py-28 bg-background relative overflow-hidden">
+      <section className="py-32 lg:py-40 bg-background relative overflow-hidden">
         <div className="absolute top-1/3 -right-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-10 left-0 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
 
