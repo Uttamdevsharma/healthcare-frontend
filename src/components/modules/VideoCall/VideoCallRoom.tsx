@@ -83,11 +83,14 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
   const [remoteParticipant, setRemoteParticipant] = useState<RemoteParticipant | null>(null)
   const [remoteCameraPub, setRemoteCameraPub] = useState<RemoteTrackPublication | null>(null)
   const [remoteCamEnabled, setRemoteCamEnabled] = useState(false)
+  const [remoteAudioPub, setRemoteAudioPub] = useState<RemoteTrackPublication | null>(null)
+  const [remoteAudioEnabled, setRemoteAudioEnabled] = useState(false)
   const [localCamActive, setLocalCamActive] = useState(false)
 
   const roomRef = useRef<Room | null>(null)
   const localVideoRef = useRef<HTMLVideoElement | null>(null)
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null)
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["video-call", videoCallingId],
@@ -158,6 +161,23 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
     }
   }, [connectionState, remoteCameraPub, remoteCamEnabled])
 
+  // Attach the remote microphone track to the audio element so it can play.
+  useEffect(() => {
+    const el = remoteAudioRef.current
+    if (!el || connectionState !== "connected") return
+
+    const track = remoteAudioPub?.track
+
+    if (track && remoteAudioEnabled) {
+      track.attach(el)
+      el.play().catch(() => {
+        // Autoplay may be blocked; it will be resumed on the next user gesture.
+      })
+    } else {
+      el.srcObject = null
+    }
+  }, [connectionState, remoteAudioPub, remoteAudioEnabled])
+
   // Cleanup the LiveKit connection when the room unmounts.
   useEffect(() => {
     return () => {
@@ -183,6 +203,11 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
             setRemoteCameraPub(publication)
             setRemoteCamEnabled(!publication.isMuted)
           }
+          if (publication.source === Track.Source.Microphone) {
+            setRemoteAudioPub(publication)
+            setRemoteAudioEnabled(!publication.isMuted)
+            room.startAudio().catch(() => {})
+          }
         },
       )
       .on(
@@ -191,6 +216,10 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
           if (publication.source === Track.Source.Camera) {
             setRemoteCameraPub(null)
             setRemoteCamEnabled(false)
+          }
+          if (publication.source === Track.Source.Microphone) {
+            setRemoteAudioPub(null)
+            setRemoteAudioEnabled(false)
           }
         },
       )
@@ -201,15 +230,23 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
         setRemoteParticipant(null)
         setRemoteCameraPub(null)
         setRemoteCamEnabled(false)
+        setRemoteAudioPub(null)
+        setRemoteAudioEnabled(false)
       })
       .on(RoomEvent.TrackMuted, (publication: TrackPublication) => {
         if (publication.source === Track.Source.Camera && !publication.isLocal) {
           setRemoteCamEnabled(false)
         }
+        if (publication.source === Track.Source.Microphone && !publication.isLocal) {
+          setRemoteAudioEnabled(false)
+        }
       })
       .on(RoomEvent.TrackUnmuted, (publication: TrackPublication) => {
         if (publication.source === Track.Source.Camera && !publication.isLocal) {
           setRemoteCamEnabled(true)
+        }
+        if (publication.source === Track.Source.Microphone && !publication.isLocal) {
+          setRemoteAudioEnabled(true)
         }
       })
       .on(RoomEvent.LocalTrackPublished, (publication: LocalTrackPublication) => {
@@ -227,12 +264,18 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
         setRemoteParticipant(null)
         setRemoteCameraPub(null)
         setRemoteCamEnabled(false)
+        setRemoteAudioPub(null)
+        setRemoteAudioEnabled(false)
         setLocalCamActive(false)
       })
 
     try {
       await room.connect(tokenData.url, tokenData.token, { autoSubscribe: true })
       setConnectionState("connected")
+
+      // Resuming audio inside this user gesture is required to satisfy the
+      // browser autoplay policy so remote participants can be heard.
+      room.startAudio().catch(() => {})
 
       await room.localParticipant.setCameraEnabled(true).catch(() => {
         setIsCameraOff(true)
@@ -387,6 +430,13 @@ const VideoCallRoom = ({ videoCallingId }: VideoCallRoomProps) => {
             <div className="relative flex aspect-video w-full max-w-3xl items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950">
               {isJoined ? (
                 <>
+                  <audio
+                    ref={remoteAudioRef}
+                    autoPlay
+                    playsInline
+                    className="hidden"
+                  />
+
                   {remoteVideoVisible && (
                     <video
                       ref={remoteVideoRef}
